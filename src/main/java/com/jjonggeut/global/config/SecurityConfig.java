@@ -52,6 +52,8 @@ public class SecurityConfig {
 				.authorizeHttpRequests(auth -> auth
 						.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 						.requestMatchers(PUBLIC_PATHS).permitAll()
+						// 로그인 상태(액세스 토큰) 또는 재설정 토큰 중 하나로 호출하므로, 인증 판단은 서비스에서 한다.
+						.requestMatchers(HttpMethod.PATCH, "/api/v1/auth/password").permitAll()
 						.anyRequest().authenticated())
 				.addFilterBefore(new JwtAuthenticationFilter(jwtProvider), UsernamePasswordAuthenticationFilter.class);
 		return http.build();
