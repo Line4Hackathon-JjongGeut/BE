@@ -3,6 +3,9 @@ package com.jjonggeut.domain.volunteerexperience.controller;
 import com.jjonggeut.domain.volunteerexperience.dto.ExperienceCreateRequest;
 import com.jjonggeut.domain.volunteerexperience.dto.ExperienceListResponse;
 import com.jjonggeut.domain.volunteerexperience.dto.ExperienceResponse;
+import com.jjonggeut.domain.volunteerexperience.dto.ExperienceSummaryRequest;
+import com.jjonggeut.domain.volunteerexperience.dto.ExperienceSummaryResponse;
+import com.jjonggeut.domain.volunteerexperience.service.ExperienceSummaryService;
 import com.jjonggeut.domain.volunteerexperience.service.VolunteerExperienceService;
 import com.jjonggeut.global.response.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -25,9 +28,19 @@ import org.springframework.web.bind.annotation.RestController;
 public class VolunteerExperienceController {
 
 	private final VolunteerExperienceService experienceService;
+	private final ExperienceSummaryService summaryService;
 
-	public VolunteerExperienceController(VolunteerExperienceService experienceService) {
+	public VolunteerExperienceController(VolunteerExperienceService experienceService,
+			ExperienceSummaryService summaryService) {
 		this.experienceService = experienceService;
+		this.summaryService = summaryService;
+	}
+
+	@Operation(summary = "봉사 경험 AI 정리",
+			description = "자연어로 쓴 봉사 경험을 AI가 정리해서 돌려준다. 저장하지 않으며, AI 호출에 실패하면 status=FAILED 로 응답한다.")
+	@PostMapping("/summaries")
+	public ApiResponse<ExperienceSummaryResponse> summarize(@Valid @RequestBody ExperienceSummaryRequest request) {
+		return ApiResponse.success(summaryService.summarize(request.content()));
 	}
 
 	@Operation(summary = "봉사 경험 저장", description = "사용자가 확인·수정한 봉사 경험을 저장한다.")
