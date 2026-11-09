@@ -1,0 +1,38 @@
+spring:
+  application:
+    name: jjonggeut
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:local}
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: none
+    properties:
+      hibernate:
+        format_sql: true
+        jdbc:
+          time_zone: Asia/Seoul
+  jackson:
+    time-zone: Asia/Seoul
+    serialization:
+      write-dates-as-timestamps: false
+
+server:
+  port: ${PORT:8080}
+  shutdown: graceful
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+
+app:
+  cors:
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:*}
+
+jwt:
+  # 32바이트 이상 필요. 미설정 시 서버가 기동되지 않는다.
+  secret: ${JWT_SECRET}
+  access-expiration-seconds: 3600       # 1시간
+  refresh-expiration-seconds: 1209600   # 14일

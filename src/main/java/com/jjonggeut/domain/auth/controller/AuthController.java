@@ -1,5 +1,7 @@
 package com.jjonggeut.domain.auth.controller;
 
+import com.jjonggeut.domain.auth.dto.LoginRequest;
+import com.jjonggeut.domain.auth.dto.LoginResponse;
 import com.jjonggeut.domain.auth.dto.SignupRequest;
 import com.jjonggeut.domain.auth.dto.SignupResponse;
 import com.jjonggeut.domain.auth.service.AuthService;
@@ -27,5 +29,11 @@ public class AuthController {
 	@PostMapping("/signup")
 	public ApiResponse<SignupResponse> signup(@Valid @RequestBody SignupRequest request) {
 		return ApiResponse.success(authService.signup(request));
+	}
+
+	@Operation(summary = "로그인", description = "아이디와 비밀번호로 로그인하고 액세스·리프레시 토큰을 발급한다.")
+	@PostMapping("/login")
+	public ApiResponse<LoginResponse> login(@Valid @RequestBody LoginRequest request) {
+		return ApiResponse.success(authService.login(request));
 	}
 }
