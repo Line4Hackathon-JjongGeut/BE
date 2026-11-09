@@ -1,7 +1,14 @@
 spring:
+  config:
+    # 팀원별 개인 설정(DB 비밀번호 등). 없어도 기동된다. 커밋 금지.
+    import: optional:classpath:application-secret.yml
   datasource:
     url: ${DB_URL:jdbc:mysql://localhost:3306/jjonggeut?serverTimezone=Asia/Seoul&characterEncoding=UTF-8}
     username: ${DB_USERNAME:root}
     password: ${DB_PASSWORD:}
   jpa:
     show-sql: true
+
+jwt:
+  # 로컬 개발 전용 키(운영 키 아님). 운영/배포는 반드시 JWT_SECRET 환경변수를 사용한다.
+  secret: ${JWT_SECRET:local-dev-only-secret-key-jjonggeut-0123456789}

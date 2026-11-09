@@ -7,3 +7,6 @@ spring:
   jpa:
     hibernate:
       ddl-auto: create-drop
+
+jwt:
+  secret: test-secret-key-for-jjonggeut-must-be-32-bytes-or-more
