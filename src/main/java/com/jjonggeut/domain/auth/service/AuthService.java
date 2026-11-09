@@ -2,6 +2,7 @@ package com.jjonggeut.domain.auth.service;
 
 import com.jjonggeut.domain.auth.dto.LoginRequest;
 import com.jjonggeut.domain.auth.dto.LoginResponse;
+import com.jjonggeut.domain.auth.dto.PasswordChangeRequest;
 import com.jjonggeut.domain.auth.dto.PasswordResetRequest;
 import com.jjonggeut.domain.auth.dto.PasswordResetResponse;
 import com.jjonggeut.domain.auth.dto.SignupRequest;
@@ -15,6 +16,7 @@ import com.jjonggeut.domain.user.entity.User;
 import com.jjonggeut.domain.user.entity.UserStatus;
 import com.jjonggeut.domain.user.repository.UserRepository;
 import com.jjonggeut.global.exception.BusinessException;
+import com.jjonggeut.global.exception.ErrorCode;
 import com.jjonggeut.global.jwt.JwtProvider;
 import com.jjonggeut.global.util.HashUtil;
 import io.jsonwebtoken.Claims;
@@ -142,10 +144,68 @@ public class AuthService {
 			throw new BusinessException(AuthErrorCode.ACCOUNT_UNAVAILABLE);
 		}
 
-		String fingerprint = HashUtil.sha256Hex(user.getPasswordHash()).substring(0, 16);
 		return new PasswordResetResponse(
-				jwtProvider.createPasswordResetToken(user.getUserId(), fingerprint),
+				jwtProvider.createPasswordResetToken(user.getUserId(), passwordFingerprint(user)),
 				jwtProvider.getPasswordResetExpirationSeconds());
+	}
+
+	/**
+	 * 비밀번호를 변경하고 기존 세션(리프레시 토큰)을 정리한다.
+	 * 로그인 상태(authenticatedUserId)이면 현재 비밀번호로 확인하고,
+	 * 아니면 비밀번호 재설정 요청으로 받은 재설정 토큰으로 확인한다.
+	 */
+	@Transactional
+	public void changePassword(Long authenticatedUserId, PasswordChangeRequest request) {
+		User user;
+		if (authenticatedUserId != null) {
+			user = userRepository.findById(authenticatedUserId)
+					.orElseThrow(() -> new BusinessException(ErrorCode.UNAUTHORIZED));
+			verifyActive(user);
+			if (request.currentPassword() == null
+					|| !passwordEncoder.matches(request.currentPassword(), user.getPasswordHash())) {
+				throw new BusinessException(AuthErrorCode.CURRENT_PASSWORD_MISMATCH);
+			}
+		} else if (request.resetToken() != null && !request.resetToken().isBlank()) {
+			user = verifyResetToken(request.resetToken());
+			verifyActive(user);
+		} else {
+			throw new BusinessException(ErrorCode.UNAUTHORIZED);
+		}
+
+		if (passwordEncoder.matches(request.newPassword(), user.getPasswordHash())) {
+			throw new BusinessException(AuthErrorCode.SAME_PASSWORD);
+		}
+
+		user.changePassword(passwordEncoder.encode(request.newPassword()));
+		// 다른 기기의 로그인 세션을 종료한다.
+		refreshTokenRepository.findByUserId(user.getUserId()).ifPresent(refreshTokenRepository::delete);
+	}
+
+	/** 서명·만료·종류를 확인하고, 발급 이후 비밀번호가 바뀌지 않았는지(1회용) 확인한다. */
+	private User verifyResetToken(String resetToken) {
+		Claims claims;
+		try {
+			claims = jwtProvider.parsePasswordResetToken(resetToken);
+		} catch (JwtException | IllegalArgumentException e) {
+			throw new BusinessException(AuthErrorCode.INVALID_RESET_TOKEN);
+		}
+
+		User user = userRepository.findById(Long.valueOf(claims.getSubject()))
+				.orElseThrow(() -> new BusinessException(AuthErrorCode.INVALID_RESET_TOKEN));
+		if (!passwordFingerprint(user).equals(claims.get("pwd", String.class))) {
+			throw new BusinessException(AuthErrorCode.INVALID_RESET_TOKEN);
+		}
+		return user;
+	}
+
+	private void verifyActive(User user) {
+		if (user.getStatus() != UserStatus.ACTIVE) {
+			throw new BusinessException(AuthErrorCode.ACCOUNT_UNAVAILABLE);
+		}
+	}
+
+	private String passwordFingerprint(User user) {
+		return HashUtil.sha256Hex(user.getPasswordHash()).substring(0, 16);
 	}
 
 	/** 리프레시 토큰을 삭제한다. 이미 로그아웃된 상태여도 성공으로 처리한다. */

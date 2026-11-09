@@ -73,4 +73,8 @@ public class User {
 		user.status = UserStatus.ACTIVE;
 		return user;
 	}
+
+	public void changePassword(String encodedPassword) {
+		this.passwordHash = encodedPassword;
+	}
 }

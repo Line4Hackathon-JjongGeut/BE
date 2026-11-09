@@ -2,6 +2,7 @@ package com.jjonggeut.domain.auth.controller;
 
 import com.jjonggeut.domain.auth.dto.LoginRequest;
 import com.jjonggeut.domain.auth.dto.LoginResponse;
+import com.jjonggeut.domain.auth.dto.PasswordChangeRequest;
 import com.jjonggeut.domain.auth.dto.PasswordResetRequest;
 import com.jjonggeut.domain.auth.dto.PasswordResetResponse;
 import com.jjonggeut.domain.auth.dto.SignupRequest;
@@ -15,6 +16,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -61,5 +63,17 @@ public class AuthController {
 	@PostMapping("/password/reset-requests")
 	public ApiResponse<PasswordResetResponse> requestPasswordReset(@Valid @RequestBody PasswordResetRequest request) {
 		return ApiResponse.success(authService.requestPasswordReset(request));
+	}
+
+	@Operation(summary = "비밀번호 변경",
+			description = "비밀번호를 변경하고 기존 세션을 정리한다. "
+					+ "로그인 상태에서는 Authorization 헤더와 currentPassword로, "
+					+ "비밀번호 재설정 요청 후에는 resetToken으로 호출한다.",
+			security = @SecurityRequirement(name = "bearerAuth"))
+	@PatchMapping("/password")
+	public ApiResponse<Void> changePassword(@AuthenticationPrincipal Long userId,
+			@Valid @RequestBody PasswordChangeRequest request) {
+		authService.changePassword(userId, request);
+		return ApiResponse.success();
 	}
 }
