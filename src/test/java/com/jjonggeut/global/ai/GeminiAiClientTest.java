@@ -21,7 +21,7 @@ import org.springframework.web.client.RestClient;
 class GeminiAiClientTest {
 
 	private static final String URL =
-			"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent";
+			"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent";
 
 	private MockRestServiceServer server;
 	private GeminiAiClient client;
@@ -31,7 +31,7 @@ class GeminiAiClientTest {
 		RestClient.Builder builder = RestClient.builder()
 				.baseUrl("https://generativelanguage.googleapis.com/v1beta");
 		server = MockRestServiceServer.bindTo(builder).build();
-		client = new GeminiAiClient(builder.build(), "test-key", "gemini-2.5-flash");
+		client = new GeminiAiClient(builder.build(), "test-key", "gemini-3.5-flash-lite");
 	}
 
 	@Test
@@ -74,7 +74,7 @@ class GeminiAiClientTest {
 		RestClient.Builder builder = RestClient.builder()
 				.baseUrl("https://generativelanguage.googleapis.com/v1beta");
 		MockRestServiceServer noCallServer = MockRestServiceServer.bindTo(builder).build();
-		GeminiAiClient noKeyClient = new GeminiAiClient(builder.build(), "", "gemini-2.5-flash");
+		GeminiAiClient noKeyClient = new GeminiAiClient(builder.build(), "", "gemini-3.5-flash-lite");
 
 		assertThatThrownBy(() -> noKeyClient.generateJson("시스템", "사용자글", Map.of()))
 				.isInstanceOf(AiException.class);
