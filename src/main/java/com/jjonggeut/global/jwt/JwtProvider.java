@@ -1,5 +1,7 @@
 package com.jjonggeut.global.jwt;
 
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import java.nio.charset.StandardCharsets;
@@ -50,6 +52,18 @@ public class JwtProvider {
 				.expiration(Date.from(now.plusSeconds(refreshExpirationSeconds)))
 				.signWith(key)
 				.compact();
+	}
+
+	/**
+	 * 액세스 토큰의 서명·만료를 검증하고 클레임을 반환한다.
+	 * 리프레시 토큰이거나 유효하지 않으면 JwtException 이 발생한다.
+	 */
+	public Claims parseAccessToken(String token) {
+		Claims claims = Jwts.parser().verifyWith(key).build().parseSignedClaims(token).getPayload();
+		if (!"access".equals(claims.get("type", String.class))) {
+			throw new JwtException("액세스 토큰이 아닙니다.");
+		}
+		return claims;
 	}
 
 	public long getAccessExpirationSeconds() {
