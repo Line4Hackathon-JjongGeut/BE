@@ -3,6 +3,8 @@ package com.jjonggeut.domain.auth.service;
 import com.jjonggeut.domain.auth.dto.LoginRequest;
 import com.jjonggeut.domain.auth.dto.LoginResponse;
 import com.jjonggeut.domain.auth.dto.SignupRequest;
+import com.jjonggeut.domain.auth.dto.TokenRefreshRequest;
+import com.jjonggeut.domain.auth.dto.TokenRefreshResponse;
 import com.jjonggeut.domain.auth.dto.SignupResponse;
 import com.jjonggeut.domain.auth.entity.RefreshToken;
 import com.jjonggeut.domain.auth.exception.AuthErrorCode;
@@ -13,6 +15,8 @@ import com.jjonggeut.domain.user.repository.UserRepository;
 import com.jjonggeut.global.exception.BusinessException;
 import com.jjonggeut.global.jwt.JwtProvider;
 import com.jjonggeut.global.util.HashUtil;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtException;
 import java.time.LocalDateTime;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -89,6 +93,36 @@ public class AuthService {
 				user.getNickname(),
 				accessToken,
 				refreshToken,
+				TOKEN_TYPE,
+				jwtProvider.getAccessExpirationSeconds());
+	}
+
+	/** 저장된 리프레시 토큰과 일치할 때만 액세스 토큰을 재발급한다. 리프레시 토큰은 그대로 유지한다. */
+	@Transactional(readOnly = true)
+	public TokenRefreshResponse refreshAccessToken(TokenRefreshRequest request) {
+		String token = request.refreshToken();
+
+		Claims claims;
+		try {
+			claims = jwtProvider.parseRefreshToken(token);
+		} catch (JwtException | IllegalArgumentException e) {
+			throw new BusinessException(AuthErrorCode.INVALID_REFRESH_TOKEN);
+		}
+
+		// 로그아웃했거나 재로그인으로 교체된 토큰은 DB 에 없다. 원인은 구분하지 않는다.
+		RefreshToken stored = refreshTokenRepository.findByTokenHash(HashUtil.sha256Hex(token))
+				.filter(saved -> saved.getExpiresAt().isAfter(LocalDateTime.now()))
+				.filter(saved -> String.valueOf(saved.getUserId()).equals(claims.getSubject()))
+				.orElseThrow(() -> new BusinessException(AuthErrorCode.INVALID_REFRESH_TOKEN));
+
+		User user = userRepository.findById(stored.getUserId())
+				.orElseThrow(() -> new BusinessException(AuthErrorCode.INVALID_REFRESH_TOKEN));
+		if (user.getStatus() != UserStatus.ACTIVE) {
+			throw new BusinessException(AuthErrorCode.ACCOUNT_UNAVAILABLE);
+		}
+
+		return new TokenRefreshResponse(
+				jwtProvider.createAccessToken(user.getUserId(), user.getRole().name()),
 				TOKEN_TYPE,
 				jwtProvider.getAccessExpirationSeconds());
 	}

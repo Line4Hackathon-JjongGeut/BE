@@ -66,6 +66,18 @@ public class JwtProvider {
 		return claims;
 	}
 
+	/**
+	 * 리프레시 토큰의 서명·만료를 검증하고 클레임을 반환한다.
+	 * 액세스 토큰이거나 유효하지 않으면 JwtException 이 발생한다.
+	 */
+	public Claims parseRefreshToken(String token) {
+		Claims claims = Jwts.parser().verifyWith(key).build().parseSignedClaims(token).getPayload();
+		if (!"refresh".equals(claims.get("type", String.class))) {
+			throw new JwtException("리프레시 토큰이 아닙니다.");
+		}
+		return claims;
+	}
+
 	public long getAccessExpirationSeconds() {
 		return accessExpirationSeconds;
 	}
