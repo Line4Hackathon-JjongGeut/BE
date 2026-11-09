@@ -2,6 +2,8 @@ package com.jjonggeut.domain.auth.service;
 
 import com.jjonggeut.domain.auth.dto.LoginRequest;
 import com.jjonggeut.domain.auth.dto.LoginResponse;
+import com.jjonggeut.domain.auth.dto.PasswordResetRequest;
+import com.jjonggeut.domain.auth.dto.PasswordResetResponse;
 import com.jjonggeut.domain.auth.dto.SignupRequest;
 import com.jjonggeut.domain.auth.dto.TokenRefreshRequest;
 import com.jjonggeut.domain.auth.dto.TokenRefreshResponse;
@@ -125,6 +127,25 @@ public class AuthService {
 				jwtProvider.createAccessToken(user.getUserId(), user.getRole().name()),
 				TOKEN_TYPE,
 				jwtProvider.getAccessExpirationSeconds());
+	}
+
+	/**
+	 * 이름과 아이디로 본인을 확인하고 비밀번호 재설정용 임시 토큰을 발급한다.
+	 * 이메일 인증이 없는 시연용 방식이다.
+	 */
+	@Transactional(readOnly = true)
+	public PasswordResetResponse requestPasswordReset(PasswordResetRequest request) {
+		User user = userRepository.findByLoginId(request.loginId())
+				.filter(found -> found.getName().equals(request.name().trim()))
+				.orElseThrow(() -> new BusinessException(AuthErrorCode.USER_NOT_FOUND));
+		if (user.getStatus() != UserStatus.ACTIVE) {
+			throw new BusinessException(AuthErrorCode.ACCOUNT_UNAVAILABLE);
+		}
+
+		String fingerprint = HashUtil.sha256Hex(user.getPasswordHash()).substring(0, 16);
+		return new PasswordResetResponse(
+				jwtProvider.createPasswordResetToken(user.getUserId(), fingerprint),
+				jwtProvider.getPasswordResetExpirationSeconds());
 	}
 
 	/** 리프레시 토큰을 삭제한다. 이미 로그아웃된 상태여도 성공으로 처리한다. */
