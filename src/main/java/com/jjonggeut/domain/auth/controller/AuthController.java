@@ -2,6 +2,8 @@ package com.jjonggeut.domain.auth.controller;
 
 import com.jjonggeut.domain.auth.dto.LoginRequest;
 import com.jjonggeut.domain.auth.dto.LoginResponse;
+import com.jjonggeut.domain.auth.dto.PasswordResetRequest;
+import com.jjonggeut.domain.auth.dto.PasswordResetResponse;
 import com.jjonggeut.domain.auth.dto.SignupRequest;
 import com.jjonggeut.domain.auth.dto.SignupResponse;
 import com.jjonggeut.domain.auth.dto.TokenRefreshRequest;
@@ -53,5 +55,11 @@ public class AuthController {
 	@PostMapping("/tokens/refresh")
 	public ApiResponse<TokenRefreshResponse> refresh(@Valid @RequestBody TokenRefreshRequest request) {
 		return ApiResponse.success(authService.refreshAccessToken(request));
+	}
+
+	@Operation(summary = "비밀번호 재설정 요청", description = "이름과 아이디로 본인을 확인하고, 비밀번호를 재설정할 수 있는 임시 토큰을 발급한다.")
+	@PostMapping("/password/reset-requests")
+	public ApiResponse<PasswordResetResponse> requestPasswordReset(@Valid @RequestBody PasswordResetRequest request) {
+		return ApiResponse.success(authService.requestPasswordReset(request));
 	}
 }
