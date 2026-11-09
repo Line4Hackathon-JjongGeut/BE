@@ -93,6 +93,12 @@ public class AuthService {
 				jwtProvider.getAccessExpirationSeconds());
 	}
 
+	/** 리프레시 토큰을 삭제한다. 이미 로그아웃된 상태여도 성공으로 처리한다. */
+	@Transactional
+	public void logout(Long userId) {
+		refreshTokenRepository.findByUserId(userId).ifPresent(refreshTokenRepository::delete);
+	}
+
 	/** 사용자당 1건만 유지한다. 재로그인하면 기존 리프레시 토큰은 무효가 된다. */
 	private void saveRefreshToken(Long userId, String refreshToken) {
 		String hash = HashUtil.sha256Hex(refreshToken);
