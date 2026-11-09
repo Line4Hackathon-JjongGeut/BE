@@ -4,6 +4,8 @@ import com.jjonggeut.domain.auth.dto.LoginRequest;
 import com.jjonggeut.domain.auth.dto.LoginResponse;
 import com.jjonggeut.domain.auth.dto.SignupRequest;
 import com.jjonggeut.domain.auth.dto.SignupResponse;
+import com.jjonggeut.domain.auth.dto.TokenRefreshRequest;
+import com.jjonggeut.domain.auth.dto.TokenRefreshResponse;
 import com.jjonggeut.domain.auth.service.AuthService;
 import com.jjonggeut.global.response.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -45,5 +47,11 @@ public class AuthController {
 	public ApiResponse<Void> logout(@AuthenticationPrincipal Long userId) {
 		authService.logout(userId);
 		return ApiResponse.success();
+	}
+
+	@Operation(summary = "액세스 토큰 재발급", description = "유효한 리프레시 토큰으로 액세스 토큰을 재발급한다.")
+	@PostMapping("/tokens/refresh")
+	public ApiResponse<TokenRefreshResponse> refresh(@Valid @RequestBody TokenRefreshRequest request) {
+		return ApiResponse.success(authService.refreshAccessToken(request));
 	}
 }
