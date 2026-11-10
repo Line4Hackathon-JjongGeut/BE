@@ -1,7 +1,9 @@
 package com.jjonggeut.domain.consent.controller;
 
+import com.jjonggeut.domain.consent.dto.ConsentHistoryResponse;
 import com.jjonggeut.domain.consent.dto.ConsentRecordRequest;
 import com.jjonggeut.domain.consent.dto.ConsentRecordResponse;
+import com.jjonggeut.domain.consent.entity.ConsentType;
 import com.jjonggeut.domain.consent.service.ConsentService;
 import com.jjonggeut.global.response.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -9,9 +11,11 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @Tag(name = "사용자")
@@ -32,5 +36,13 @@ public class ConsentController {
 	public ApiResponse<ConsentRecordResponse> record(@AuthenticationPrincipal Long userId,
 			@Valid @RequestBody ConsentRecordRequest request) {
 		return ApiResponse.success(consentService.record(userId, request));
+	}
+
+	@Operation(summary = "내 동의 이력 조회",
+			description = "약관, 개인정보, 위치정보, 제3자 제공, AI 정보 처리 동의 이력을 조회한다. current 는 종류별 현재 상태, history 는 전체 이력(최신순)이다.")
+	@GetMapping
+	public ApiResponse<ConsentHistoryResponse> list(@AuthenticationPrincipal Long userId,
+			@RequestParam(required = false) ConsentType consentType) {
+		return ApiResponse.success(consentService.getMyConsents(userId, consentType));
 	}
 }
