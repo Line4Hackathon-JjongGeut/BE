@@ -52,4 +52,13 @@ public class ConsentService {
 				latestByType.values().stream().map(ConsentHistoryResponse.CurrentConsent::from).toList(),
 				history.stream().map(ConsentRecordResponse.ConsentResponse::from).toList());
 	}
+
+	/** 해당 종류의 현재 동의 상태(가장 최근 기록이 동의인지). 기록이 없으면 false. */
+	@Transactional(readOnly = true)
+	public boolean isAgreed(Long userId, ConsentType consentType) {
+		return consentRepository
+				.findFirstByUserIdAndConsentTypeOrderByCreatedAtDescUserConsentIdDesc(userId, consentType)
+				.map(UserConsent::isAgreed)
+				.orElse(false);
+	}
 }
