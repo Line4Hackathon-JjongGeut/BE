@@ -20,6 +20,14 @@ public interface PostingRefRepository extends JpaRepository<PostingRef, Long> {
 			""")
 	List<PostingRef> findOpenVolunteerPostings(@Param("now") LocalDateTime now, Pageable pageable);
 
+	/** 시설의 모집 중 공고. 활동 시작일이 빠른 순이고 일시가 없는 공고는 뒤에 온다. */
+	@Query("""
+			select p from PostingRef p
+			where p.shelterId = :shelterId and p.status = 'OPEN'
+			order by case when p.activityStartAt is null then 1 else 0 end, p.activityStartAt, p.postingId
+			""")
+	List<PostingRef> findOpenByShelterId(@Param("shelterId") Long shelterId, Pageable pageable);
+
 	/** 시설별 모집 중인 공고 수. 행은 [시설 ID, 개수] 이고 모집 중 공고가 없는 시설은 나오지 않는다. */
 	@Query("""
 			select p.shelterId, count(p) from PostingRef p

@@ -1,6 +1,7 @@
 package com.jjonggeut.domain.shelter.controller;
 
 import com.jjonggeut.domain.activity.dto.PageResponse;
+import com.jjonggeut.domain.shelter.dto.ShelterDetailResponse;
 import com.jjonggeut.domain.shelter.dto.ShelterListItem;
 import com.jjonggeut.domain.shelter.service.ShelterQueryService;
 import com.jjonggeut.global.response.ApiResponse;
@@ -9,6 +10,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -37,5 +39,14 @@ public class ShelterController {
 			@RequestParam(required = false) Integer size) {
 		return ApiResponse.success(shelterService.list(userId, new ShelterQueryService.Query(sido, sigungu,
 				latitude, longitude, maxDistanceKm, verificationStatus, animalType, page, size)));
+	}
+
+	@Operation(summary = "보호시설 상세 조회",
+			description = "시설 정보, 인증 상태, 연락처(인증 시설만)와 모집 중 공고를 조회한다. 좌표를 보내면 거리를 함께 준다.")
+	@GetMapping("/{shelterId}")
+	public ApiResponse<ShelterDetailResponse> detail(@AuthenticationPrincipal Long userId,
+			@PathVariable Long shelterId, @RequestParam(required = false) Double latitude,
+			@RequestParam(required = false) Double longitude) {
+		return ApiResponse.success(shelterService.detail(userId, shelterId, latitude, longitude));
 	}
 }
