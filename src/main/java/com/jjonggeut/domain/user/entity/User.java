@@ -77,4 +77,35 @@ public class User {
 	public void changePassword(String encodedPassword) {
 		this.passwordHash = encodedPassword;
 	}
+
+	public void changeName(String name) {
+		this.name = name;
+	}
+
+	public void changeNickname(String nickname) {
+		this.nickname = nickname;
+	}
+
+	public void changePhone(String phone) {
+		this.phone = phone;
+	}
+
+	public void changeEmail(String email) {
+		this.email = email;
+	}
+
+	/**
+	 * 탈퇴 처리: 개인정보를 지우고 로그인할 수 없는 상태로 바꾼다.
+	 * login_id 는 UNIQUE NOT NULL 이라 지우지 않고 자리표시자로 바꿔 아이디와 닉네임을 다시 쓸 수 있게 한다.
+	 */
+	public void withdraw(String unusablePasswordHash, LocalDateTime now) {
+		this.loginId = "withdrawn_" + this.userId;
+		this.passwordHash = unusablePasswordHash;
+		this.name = "탈퇴한 사용자";
+		this.nickname = null;
+		this.email = null;
+		this.phone = null;
+		this.status = UserStatus.WITHDRAWN;
+		this.deletedAt = now;
+	}
 }
