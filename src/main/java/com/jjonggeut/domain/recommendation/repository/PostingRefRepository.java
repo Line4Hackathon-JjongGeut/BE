@@ -2,6 +2,7 @@ package com.jjonggeut.domain.recommendation.repository;
 
 import com.jjonggeut.domain.recommendation.entity.PostingRef;
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.List;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -18,4 +19,12 @@ public interface PostingRefRepository extends JpaRepository<PostingRef, Long> {
 			order by p.postingId desc
 			""")
 	List<PostingRef> findOpenVolunteerPostings(@Param("now") LocalDateTime now, Pageable pageable);
+
+	/** 시설별 모집 중인 공고 수. 행은 [시설 ID, 개수] 이고 모집 중 공고가 없는 시설은 나오지 않는다. */
+	@Query("""
+			select p.shelterId, count(p) from PostingRef p
+			where p.shelterId in :shelterIds and p.status = 'OPEN'
+			group by p.shelterId
+			""")
+	List<Object[]> countOpenByShelterIds(@Param("shelterIds") Collection<Long> shelterIds);
 }

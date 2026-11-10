@@ -1,5 +1,8 @@
 package com.jjonggeut.domain.user.service;
 
+import com.jjonggeut.domain.activity.repository.NotificationRefRepository;
+import com.jjonggeut.domain.activity.repository.PostingBookmarkRefRepository;
+import com.jjonggeut.domain.activity.repository.ShelterBookmarkRefRepository;
 import com.jjonggeut.domain.auth.exception.AuthErrorCode;
 import com.jjonggeut.domain.auth.repository.RefreshTokenRepository;
 import com.jjonggeut.domain.profile.repository.UserProfileRepository;
@@ -33,13 +36,17 @@ public class UserService {
 	private final RecommendationItemRepository recommendationItemRepository;
 	private final RecommendationBatchRepository recommendationBatchRepository;
 	private final SavedSearchRepository savedSearchRepository;
+	private final PostingBookmarkRefRepository postingBookmarkRepository;
+	private final ShelterBookmarkRefRepository shelterBookmarkRepository;
+	private final NotificationRefRepository notificationRepository;
 
 	public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder,
 			RefreshTokenRepository refreshTokenRepository, UserProfileRepository profileRepository,
 			VolunteerExperienceRepository experienceRepository,
 			RecommendationItemRepository recommendationItemRepository,
 			RecommendationBatchRepository recommendationBatchRepository,
-			SavedSearchRepository savedSearchRepository) {
+			SavedSearchRepository savedSearchRepository, PostingBookmarkRefRepository postingBookmarkRepository,
+			ShelterBookmarkRefRepository shelterBookmarkRepository, NotificationRefRepository notificationRepository) {
 		this.userRepository = userRepository;
 		this.passwordEncoder = passwordEncoder;
 		this.refreshTokenRepository = refreshTokenRepository;
@@ -48,6 +55,9 @@ public class UserService {
 		this.recommendationItemRepository = recommendationItemRepository;
 		this.recommendationBatchRepository = recommendationBatchRepository;
 		this.savedSearchRepository = savedSearchRepository;
+		this.postingBookmarkRepository = postingBookmarkRepository;
+		this.shelterBookmarkRepository = shelterBookmarkRepository;
+		this.notificationRepository = notificationRepository;
 	}
 
 	@Transactional(readOnly = true)
@@ -85,7 +95,8 @@ public class UserService {
 	}
 
 	/**
-	 * 탈퇴 처리. 계정은 탈퇴 상태로 바꾸고 개인정보를 지우며, 로그인 세션·추천 프로필·봉사 경험·추천 기록·저장 검색 조건은 삭제한다.
+	 * 탈퇴 처리. 계정은 탈퇴 상태로 바꾸고 개인정보를 지우며, 로그인 세션·추천 프로필·봉사 경험·추천 기록·저장 검색 조건·관심 공고·관심 시설·알림은 삭제한다.
+	 * 봉사 신청 기록은 시설의 운영 기록이라 남기며, 계정이 익명화되어 개인을 알아볼 수 없다.
 	 * 동의 이력은 법적 기록이라 남기고, 행동 이벤트는 계정이 익명화되므로 그대로 둔다.
 	 */
 	@Transactional
@@ -98,6 +109,9 @@ public class UserService {
 		recommendationItemRepository.deleteByUserId(userId);
 		recommendationBatchRepository.deleteByUserId(userId);
 		savedSearchRepository.deleteByUserId(userId);
+		postingBookmarkRepository.deleteByUserId(userId);
+		shelterBookmarkRepository.deleteByUserId(userId);
+		notificationRepository.deleteByUserId(userId);
 
 		// 어떤 비밀번호로도 로그인할 수 없도록 아무도 모르는 값의 해시를 넣는다.
 		user.withdraw(passwordEncoder.encode(UUID.randomUUID().toString()), LocalDateTime.now());
