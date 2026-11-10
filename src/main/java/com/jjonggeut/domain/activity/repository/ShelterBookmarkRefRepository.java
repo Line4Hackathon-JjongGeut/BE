@@ -1,6 +1,8 @@
 package com.jjonggeut.domain.activity.repository;
 
 import com.jjonggeut.domain.activity.entity.ShelterBookmarkRef;
+import java.util.Collection;
+import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -23,4 +25,9 @@ public interface ShelterBookmarkRefRepository extends JpaRepository<ShelterBookm
 			where b.userId = :userId and s.shelterId = b.shelterId
 			""")
 	Page<Object[]> findBookmarked(@Param("userId") Long userId, Pageable pageable);
+
+	/** 주어진 시설 중 내가 저장한 시설의 ID. */
+	@Query("select b.shelterId from ShelterBookmarkRef b where b.userId = :userId and b.shelterId in :shelterIds")
+	List<Long> findBookmarkedShelterIds(@Param("userId") Long userId,
+			@Param("shelterIds") Collection<Long> shelterIds);
 }
