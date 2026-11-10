@@ -81,6 +81,12 @@ public class UserProfile {
 	@Column(name = "updated_at", nullable = false)
 	private LocalDateTime updatedAt;
 
+	/** 아직 아무 항목도 입력하지 않은 빈 프로필. 이후 change* 메서드로 채운다. */
+	public static UserProfile empty(Long userId) {
+		return create(userId, null, null, null, null, null, null, null,
+				List.of(), List.of(), List.of(), List.of());
+	}
+
 	public static UserProfile create(Long userId, String regionSido, String regionSigungu, Double latitude,
 			Double longitude, Integer maxDistanceKm, ExperienceLevel experienceLevel,
 			ActivityFrequency activityFrequency, List<InterestAnimal> interestAnimals,
@@ -100,5 +106,40 @@ public class UserProfile {
 		profile.availableDays = availableDays;
 		profile.availableTimeSlots = availableTimeSlots;
 		return profile;
+	}
+
+	public void changeRegion(String regionSido, String regionSigungu, Double latitude, Double longitude) {
+		this.regionSido = regionSido;
+		this.regionSigungu = regionSigungu;
+		this.latitude = latitude;
+		this.longitude = longitude;
+	}
+
+	public void changeMaxDistanceKm(Integer maxDistanceKm) {
+		this.maxDistanceKm = maxDistanceKm;
+	}
+
+	public void changeExperienceLevel(ExperienceLevel experienceLevel) {
+		this.experienceLevel = experienceLevel;
+	}
+
+	public void changeActivityFrequency(ActivityFrequency activityFrequency) {
+		this.activityFrequency = activityFrequency;
+	}
+
+	public void changeInterestAnimals(List<InterestAnimal> interestAnimals) {
+		this.interestAnimals = interestAnimals;
+	}
+
+	public void changeInterestCategories(List<ActivityCategory> interestCategories) {
+		this.interestCategories = interestCategories;
+	}
+
+	public void changeAvailableDays(List<AvailableDay> availableDays) {
+		this.availableDays = availableDays;
+	}
+
+	public void changeAvailableTimeSlots(List<AvailableTimeSlot> availableTimeSlots) {
+		this.availableTimeSlots = availableTimeSlots;
 	}
 }
