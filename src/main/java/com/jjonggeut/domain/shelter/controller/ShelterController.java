@@ -1,6 +1,7 @@
 package com.jjonggeut.domain.shelter.controller;
 
 import com.jjonggeut.domain.activity.dto.PageResponse;
+import com.jjonggeut.domain.shelter.dto.ShelterAnimalStatsResponse;
 import com.jjonggeut.domain.shelter.dto.ShelterDetailResponse;
 import com.jjonggeut.domain.shelter.dto.ShelterListItem;
 import com.jjonggeut.domain.shelter.service.ShelterQueryService;
@@ -48,5 +49,11 @@ public class ShelterController {
 			@PathVariable Long shelterId, @RequestParam(required = false) Double latitude,
 			@RequestParam(required = false) Double longitude) {
 		return ApiResponse.success(shelterService.detail(userId, shelterId, latitude, longitude));
+	}
+
+	@Operation(summary = "보호동물 현황 조회", description = "시설의 강아지, 고양이, 기타 동물 보호 현황을 조회한다.")
+	@GetMapping("/{shelterId}/animal-stats")
+	public ApiResponse<ShelterAnimalStatsResponse> animalStats(@PathVariable Long shelterId) {
+		return ApiResponse.success(shelterService.animalStats(shelterId));
 	}
 }
