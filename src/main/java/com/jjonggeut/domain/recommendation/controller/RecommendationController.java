@@ -1,8 +1,10 @@
 package com.jjonggeut.domain.recommendation.controller;
 
+import com.jjonggeut.domain.recommendation.dto.ClickResponse;
 import com.jjonggeut.domain.recommendation.dto.ImpressionRequest;
 import com.jjonggeut.domain.recommendation.dto.ImpressionResponse;
 import com.jjonggeut.domain.recommendation.dto.RecommendationResponse;
+import com.jjonggeut.domain.recommendation.service.RecommendationClickService;
 import com.jjonggeut.domain.recommendation.service.RecommendationImpressionService;
 import com.jjonggeut.domain.recommendation.service.RecommendationService;
 import com.jjonggeut.global.response.ApiResponse;
@@ -27,11 +29,13 @@ public class RecommendationController {
 
 	private final RecommendationService recommendationService;
 	private final RecommendationImpressionService impressionService;
+	private final RecommendationClickService clickService;
 
 	public RecommendationController(RecommendationService recommendationService,
-			RecommendationImpressionService impressionService) {
+			RecommendationImpressionService impressionService, RecommendationClickService clickService) {
 		this.recommendationService = recommendationService;
 		this.impressionService = impressionService;
+		this.clickService = clickService;
 	}
 
 	@Operation(summary = "AI 맞춤 활동 추천",
@@ -51,5 +55,13 @@ public class RecommendationController {
 			@PathVariable Long batchId,
 			@Valid @RequestBody(required = false) ImpressionRequest request) {
 		return ApiResponse.success(impressionService.record(userId, batchId, request));
+	}
+
+	@Operation(summary = "추천 클릭 기록",
+			description = "추천 활동 클릭을 기록하고 신청 전환 분석에 연결한다. 클릭할 때마다 clickCount 가 늘고 최초 클릭 시각은 유지하며, 노출이 비어 있으면 함께 기록한다.")
+	@PostMapping("/{batchId}/items/{itemId}/clicks")
+	public ApiResponse<ClickResponse> click(@AuthenticationPrincipal Long userId, @PathVariable Long batchId,
+			@PathVariable Long itemId) {
+		return ApiResponse.success(clickService.record(userId, batchId, itemId));
 	}
 }

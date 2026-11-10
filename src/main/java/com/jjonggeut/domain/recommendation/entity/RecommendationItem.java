@@ -49,6 +49,14 @@ public class RecommendationItem {
 	@Column(name = "impressed_at")
 	private LocalDateTime impressedAt;
 
+	/** 최초 클릭 시각. 클릭 기록 API 가 채운다. */
+	@Column(name = "clicked_at")
+	private LocalDateTime clickedAt;
+
+	/** 누적 클릭 수. */
+	@Column(name = "click_count", nullable = false)
+	private int clickCount;
+
 	@CreationTimestamp
 	@Column(name = "created_at", nullable = false, updatable = false)
 	private LocalDateTime createdAt;
@@ -72,5 +80,17 @@ public class RecommendationItem {
 		}
 		this.impressedAt = at;
 		return true;
+	}
+
+	/**
+	 * 클릭을 기록한다. 클릭 수는 늘리고 최초 클릭 시각은 유지한다.
+	 * 클릭은 노출을 뜻하므로 노출이 비어 있으면 함께 채운다.
+	 */
+	public void recordClick(LocalDateTime at) {
+		this.clickCount++;
+		if (this.clickedAt == null) {
+			this.clickedAt = at;
+		}
+		markImpressed(at);
 	}
 }
