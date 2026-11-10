@@ -8,6 +8,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -59,4 +60,15 @@ public interface PostingRefRepository extends JpaRepository<PostingRef, Long>, J
 			group by p.shelterId
 			""")
 	List<Object[]> countOpenByShelterIds(@Param("shelterIds") Collection<Long> shelterIds);
+
+	/** 공고의 신청 인원을 1 올린다. */
+	@Modifying(flushAutomatically = true)
+	@Query(value = "update posting set applicant_count = coalesce(applicant_count, 0) + 1 "
+			+ "where posting_id = :postingId", nativeQuery = true)
+	int increaseApplicants(@Param("postingId") Long postingId);
+
+	@Modifying(flushAutomatically = true)
+	@Query(value = "update posting set applicant_count = applicant_count - 1 "
+			+ "where posting_id = :postingId and applicant_count > 0", nativeQuery = true)
+	int decreaseApplicants(@Param("postingId") Long postingId);
 }

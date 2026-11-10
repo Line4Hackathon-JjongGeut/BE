@@ -1,6 +1,7 @@
 package com.jjonggeut.domain.recommendation.entity;
 
 import com.jjonggeut.domain.posting.entity.FosterContactMethod;
+import com.jjonggeut.domain.posting.entity.StringListConverter;
 import com.jjonggeut.domain.volunteerexperience.entity.ActivityCategory;
 import com.jjonggeut.domain.volunteerexperience.entity.ActivityCategoryListConverter;
 import jakarta.persistence.Column;
@@ -115,6 +116,10 @@ public class PostingRef {
 	@Column(name = "created_at")
 	private LocalDateTime createdAt;
 
+	@Convert(converter = StringListConverter.class)
+	@Column(name = "preparations", length = 1000)
+	private List<String> preparations;
+
 	public static PostingRef of(Long postingId, Long shelterId, String postingType, String title, String status,
 			List<ActivityCategory> activityCategories, String animalType, LocalDateTime activityStartAt,
 			Integer capacity, Integer applicantCount) {
@@ -174,6 +179,15 @@ public class PostingRef {
 		this.contactMethod = contactMethod;
 		this.externalUrl = externalUrl;
 		return this;
+	}
+
+	public PostingRef withPreparations(List<String> preparations) {
+		this.preparations = preparations;
+		return this;
+	}
+
+	public List<String> getPreparations() {
+		return preparations == null ? List.of() : preparations;
 	}
 
 	public boolean isUrgent() {
