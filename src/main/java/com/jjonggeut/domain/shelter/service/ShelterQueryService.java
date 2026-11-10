@@ -8,8 +8,11 @@ import com.jjonggeut.domain.profile.entity.InterestAnimal;
 import com.jjonggeut.domain.recommendation.entity.ShelterRef;
 import com.jjonggeut.domain.recommendation.repository.PostingRefRepository;
 import com.jjonggeut.domain.recommendation.repository.ShelterRefRepository;
+import com.jjonggeut.domain.shelter.dto.ShelterDetailResponse;
 import com.jjonggeut.domain.shelter.dto.ShelterListItem;
+import com.jjonggeut.domain.shelter.dto.ShelterOpenPostingItem;
 import com.jjonggeut.domain.shelter.entity.VerificationStatus;
+import com.jjonggeut.domain.shelter.exception.ShelterErrorCode;
 import com.jjonggeut.global.exception.BusinessException;
 import com.jjonggeut.global.exception.ErrorCode;
 import com.jjonggeut.global.util.GeoUtil;
@@ -22,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
@@ -29,7 +33,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * 보호시설 목록 조회. 지역·인증 상태는 DB 에서, 동물 유형·거리는 서버에서 걸러 정렬하고 나눈다.
+ * 보호시설 목록·상세 조회. 지역·인증 상태는 DB 에서, 동물 유형·거리는 서버에서 걸러 정렬하고 나눈다.
  * 시설이 수백 곳 수준이라는 전제라 전체를 메모리에서 거른다.
  */
 @Service
@@ -37,6 +41,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class ShelterQueryService {
 
 	private static final int MAX_DISTANCE_KM = 200;
+	private static final int DETAIL_POSTING_LIMIT = 10;
 
 	private final ShelterRefRepository shelterRepository;
 	private final PostingRefRepository postingRepository;
@@ -123,6 +128,36 @@ public class ShelterQueryService {
 					openCounts.getOrDefault(shelter.getShelterId(), 0L),
 					bookmarked.contains(shelter.getShelterId()));
 		});
+	}
+
+	/** 시설 한 곳의 상세. 좌표를 함께 보내면 거리를 계산하고, 연락처는 인증된 시설만 내려준다. */
+	public ShelterDetailResponse detail(Long userId, Long shelterId, Double latitude, Double longitude) {
+		if (shelterId == null || shelterId < 1 || (latitude == null) != (longitude == null)
+				|| latitude != null && (latitude < -90 || latitude > 90 || longitude < -180 || longitude > 180)) {
+			throw new BusinessException(ErrorCode.VALIDATION_FAILED);
+		}
+		ShelterRef shelter = shelterRepository.findById(shelterId)
+				.orElseThrow(() -> new BusinessException(ShelterErrorCode.SHELTER_NOT_FOUND));
+
+		Double distance = null;
+		if (latitude != null && shelter.getLatitude() != null && shelter.getLongitude() != null) {
+			distance = Math.round(GeoUtil.haversineKm(latitude, longitude, shelter.getLatitude(),
+					shelter.getLongitude()) * 10) / 10.0;
+		}
+		boolean verified = shelter.getVerificationStatus() == VerificationStatus.VERIFIED;
+		long openCount = postingRepository.countOpenByShelterIds(List.of(shelterId)).stream()
+				.mapToLong(row -> (Long) row[1]).sum();
+		List<ShelterOpenPostingItem> postings = postingRepository
+				.findOpenByShelterId(shelterId, PageRequest.of(0, DETAIL_POSTING_LIMIT)).stream()
+				.map(p -> new ShelterOpenPostingItem(p.getPostingId(), p.getPostingType(), p.getTitle(),
+						p.getActivityStartAt(), p.getCapacity(), p.getApplicantCount()))
+				.toList();
+		boolean bookmarked = !bookmarkRepository.findBookmarkedShelterIds(userId, List.of(shelterId)).isEmpty();
+
+		return new ShelterDetailResponse(shelter.getShelterId(), shelter.getName(), region(shelter),
+				shelter.getAddress(), shelter.getLatitude(), shelter.getLongitude(),
+				verified ? shelter.getPhone() : null, shelter.getDescription(), shelter.getAnimalTypes(),
+				shelter.getVerificationStatus(), distance, bookmarked, openCount, postings);
 	}
 
 	private Specification<ShelterRef> specification(Query query, VerificationStatus verification) {
