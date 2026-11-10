@@ -8,11 +8,13 @@ import com.jjonggeut.domain.profile.entity.InterestAnimal;
 import com.jjonggeut.domain.recommendation.entity.ShelterRef;
 import com.jjonggeut.domain.recommendation.repository.PostingRefRepository;
 import com.jjonggeut.domain.recommendation.repository.ShelterRefRepository;
+import com.jjonggeut.domain.shelter.dto.ShelterAnimalStatsResponse;
 import com.jjonggeut.domain.shelter.dto.ShelterDetailResponse;
 import com.jjonggeut.domain.shelter.dto.ShelterListItem;
 import com.jjonggeut.domain.shelter.dto.ShelterOpenPostingItem;
 import com.jjonggeut.domain.shelter.entity.VerificationStatus;
 import com.jjonggeut.domain.shelter.exception.ShelterErrorCode;
+import com.jjonggeut.domain.shelter.repository.ShelterAnimalStatRefRepository;
 import com.jjonggeut.global.exception.BusinessException;
 import com.jjonggeut.global.exception.ErrorCode;
 import com.jjonggeut.global.util.GeoUtil;
@@ -46,12 +48,15 @@ public class ShelterQueryService {
 	private final ShelterRefRepository shelterRepository;
 	private final PostingRefRepository postingRepository;
 	private final ShelterBookmarkRefRepository bookmarkRepository;
+	private final ShelterAnimalStatRefRepository animalStatRepository;
 
 	public ShelterQueryService(ShelterRefRepository shelterRepository, PostingRefRepository postingRepository,
-			ShelterBookmarkRefRepository bookmarkRepository) {
+			ShelterBookmarkRefRepository bookmarkRepository,
+			ShelterAnimalStatRefRepository animalStatRepository) {
 		this.shelterRepository = shelterRepository;
 		this.postingRepository = postingRepository;
 		this.bookmarkRepository = bookmarkRepository;
+		this.animalStatRepository = animalStatRepository;
 	}
 
 	/** 조회 조건. 모두 선택이며 서로의 조합 규칙은 {@link #validate()} 가 확인한다. */
@@ -158,6 +163,21 @@ public class ShelterQueryService {
 				shelter.getAddress(), shelter.getLatitude(), shelter.getLongitude(),
 				verified ? shelter.getPhone() : null, shelter.getDescription(), shelter.getAnimalTypes(),
 				shelter.getVerificationStatus(), distance, bookmarked, openCount, postings);
+	}
+
+	/** 시설의 보호동물 현황. 등록된 현황이 없는 시설은 모두 0 으로 준다. */
+	public ShelterAnimalStatsResponse animalStats(Long shelterId) {
+		if (shelterId == null || shelterId < 1) {
+			throw new BusinessException(ErrorCode.VALIDATION_FAILED);
+		}
+		if (!shelterRepository.existsById(shelterId)) {
+			throw new BusinessException(ShelterErrorCode.SHELTER_NOT_FOUND);
+		}
+		return animalStatRepository.findById(shelterId)
+				.map(stat -> new ShelterAnimalStatsResponse(shelterId, stat.getDogCount(), stat.getCatCount(),
+						stat.getOtherCount(), stat.getDogCount() + stat.getCatCount() + stat.getOtherCount(),
+						stat.getUpdatedAt()))
+				.orElseGet(() -> new ShelterAnimalStatsResponse(shelterId, 0, 0, 0, 0, null));
 	}
 
 	private Specification<ShelterRef> specification(Query query, VerificationStatus verification) {
