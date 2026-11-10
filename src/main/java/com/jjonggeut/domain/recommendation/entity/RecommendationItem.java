@@ -64,4 +64,13 @@ public class RecommendationItem {
 		item.reasonTags = reasonTags;
 		return item;
 	}
+
+	/** 최초 노출 시각만 기록한다. 이미 기록되어 있으면 바꾸지 않고 false 를 반환한다. */
+	public boolean markImpressed(LocalDateTime at) {
+		if (this.impressedAt != null) {
+			return false;
+		}
+		this.impressedAt = at;
+		return true;
+	}
 }
