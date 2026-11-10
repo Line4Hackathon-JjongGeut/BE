@@ -4,6 +4,8 @@ import com.jjonggeut.domain.activity.dto.PageResponse;
 import com.jjonggeut.domain.shelter.dto.ShelterAnimalStatsResponse;
 import com.jjonggeut.domain.shelter.dto.ShelterDetailResponse;
 import com.jjonggeut.domain.shelter.dto.ShelterListItem;
+import com.jjonggeut.domain.shelter.dto.ShelterPostingItem;
+import com.jjonggeut.domain.shelter.service.ShelterPostingQueryService;
 import com.jjonggeut.domain.shelter.service.ShelterQueryService;
 import com.jjonggeut.global.response.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -23,9 +25,11 @@ import org.springframework.web.bind.annotation.RestController;
 public class ShelterController {
 
 	private final ShelterQueryService shelterService;
+	private final ShelterPostingQueryService postingService;
 
-	public ShelterController(ShelterQueryService shelterService) {
+	public ShelterController(ShelterQueryService shelterService, ShelterPostingQueryService postingService) {
 		this.shelterService = shelterService;
+		this.postingService = postingService;
 	}
 
 	@Operation(summary = "보호시설 목록 조회",
@@ -55,5 +59,14 @@ public class ShelterController {
 	@GetMapping("/{shelterId}/animal-stats")
 	public ApiResponse<ShelterAnimalStatsResponse> animalStats(@PathVariable Long shelterId) {
 		return ApiResponse.success(shelterService.animalStats(shelterId));
+	}
+
+	@Operation(summary = "시설 모집공고 목록 조회",
+			description = "시설의 모집 중인 봉사·후원·임시보호 공고를 활동 시작일 빠른 순으로 조회한다.")
+	@GetMapping("/{shelterId}/postings")
+	public ApiResponse<PageResponse<ShelterPostingItem>> postings(@AuthenticationPrincipal Long userId,
+			@PathVariable Long shelterId, @RequestParam(required = false) String postingType,
+			@RequestParam(required = false) Integer page, @RequestParam(required = false) Integer size) {
+		return ApiResponse.success(postingService.list(userId, shelterId, postingType, page, size));
 	}
 }
