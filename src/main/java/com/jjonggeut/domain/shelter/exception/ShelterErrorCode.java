@@ -5,7 +5,9 @@ import org.springframework.http.HttpStatus;
 
 public enum ShelterErrorCode implements BaseErrorCode {
 
-	SHELTER_NOT_FOUND(HttpStatus.NOT_FOUND, "SHELTER_404_1", "보호시설을 찾을 수 없습니다.");
+	SHELTER_NOT_FOUND(HttpStatus.NOT_FOUND, "SHELTER_404_1", "보호시설을 찾을 수 없습니다."),
+	BOOKMARK_NOT_FOUND(HttpStatus.NOT_FOUND, "SHELTER_404_2", "관심 시설로 저장되어 있지 않습니다."),
+	BOOKMARK_ALREADY_EXISTS(HttpStatus.CONFLICT, "SHELTER_409_1", "이미 관심 시설로 저장되어 있습니다.");
 
 	private final HttpStatus httpStatus;
 	private final String code;

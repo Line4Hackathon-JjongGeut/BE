@@ -12,7 +12,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.Immutable;
 
-/** 사용자가 저장한 보호시설(shelter_bookmark)의 읽기 전용 매핑. 저장·해제는 보호시설 API 의 몫이다. */
+/** 사용자가 저장한 보호시설(shelter_bookmark). 행은 추가·삭제만 하고 수정하지 않는다. */
 @Entity
 @Immutable
 @Table(name = "shelter_bookmark")
