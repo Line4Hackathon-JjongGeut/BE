@@ -5,6 +5,7 @@ import com.jjonggeut.domain.auth.repository.RefreshTokenRepository;
 import com.jjonggeut.domain.profile.repository.UserProfileRepository;
 import com.jjonggeut.domain.recommendation.repository.RecommendationBatchRepository;
 import com.jjonggeut.domain.recommendation.repository.RecommendationItemRepository;
+import com.jjonggeut.domain.savedsearch.repository.SavedSearchRepository;
 import com.jjonggeut.domain.user.dto.UserResponse;
 import com.jjonggeut.domain.user.dto.UserUpdateRequest;
 import com.jjonggeut.domain.user.entity.User;
@@ -31,12 +32,14 @@ public class UserService {
 	private final VolunteerExperienceRepository experienceRepository;
 	private final RecommendationItemRepository recommendationItemRepository;
 	private final RecommendationBatchRepository recommendationBatchRepository;
+	private final SavedSearchRepository savedSearchRepository;
 
 	public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder,
 			RefreshTokenRepository refreshTokenRepository, UserProfileRepository profileRepository,
 			VolunteerExperienceRepository experienceRepository,
 			RecommendationItemRepository recommendationItemRepository,
-			RecommendationBatchRepository recommendationBatchRepository) {
+			RecommendationBatchRepository recommendationBatchRepository,
+			SavedSearchRepository savedSearchRepository) {
 		this.userRepository = userRepository;
 		this.passwordEncoder = passwordEncoder;
 		this.refreshTokenRepository = refreshTokenRepository;
@@ -44,6 +47,7 @@ public class UserService {
 		this.experienceRepository = experienceRepository;
 		this.recommendationItemRepository = recommendationItemRepository;
 		this.recommendationBatchRepository = recommendationBatchRepository;
+		this.savedSearchRepository = savedSearchRepository;
 	}
 
 	@Transactional(readOnly = true)
@@ -81,7 +85,7 @@ public class UserService {
 	}
 
 	/**
-	 * 탈퇴 처리. 계정은 탈퇴 상태로 바꾸고 개인정보를 지우며, 로그인 세션·추천 프로필·봉사 경험·추천 기록은 삭제한다.
+	 * 탈퇴 처리. 계정은 탈퇴 상태로 바꾸고 개인정보를 지우며, 로그인 세션·추천 프로필·봉사 경험·추천 기록·저장 검색 조건은 삭제한다.
 	 * 동의 이력은 법적 기록이라 남기고, 행동 이벤트는 계정이 익명화되므로 그대로 둔다.
 	 */
 	@Transactional
@@ -93,6 +97,7 @@ public class UserService {
 		experienceRepository.deleteByUserId(userId);
 		recommendationItemRepository.deleteByUserId(userId);
 		recommendationBatchRepository.deleteByUserId(userId);
+		savedSearchRepository.deleteByUserId(userId);
 
 		// 어떤 비밀번호로도 로그인할 수 없도록 아무도 모르는 값의 해시를 넣는다.
 		user.withdraw(passwordEncoder.encode(UUID.randomUUID().toString()), LocalDateTime.now());
