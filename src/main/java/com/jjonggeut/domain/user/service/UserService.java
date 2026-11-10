@@ -2,6 +2,7 @@ package com.jjonggeut.domain.user.service;
 
 import com.jjonggeut.domain.activity.repository.NotificationRefRepository;
 import com.jjonggeut.domain.activity.repository.PostingBookmarkRefRepository;
+import com.jjonggeut.domain.application.service.ApplicationService;
 import com.jjonggeut.domain.posting.repository.FosterInquiryRepository;
 import com.jjonggeut.domain.activity.repository.ShelterBookmarkRefRepository;
 import com.jjonggeut.domain.auth.exception.AuthErrorCode;
@@ -41,6 +42,7 @@ public class UserService {
 	private final ShelterBookmarkRefRepository shelterBookmarkRepository;
 	private final NotificationRefRepository notificationRepository;
 	private final FosterInquiryRepository fosterInquiryRepository;
+	private final ApplicationService applicationService;
 
 	public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder,
 			RefreshTokenRepository refreshTokenRepository, UserProfileRepository profileRepository,
@@ -49,7 +51,7 @@ public class UserService {
 			RecommendationBatchRepository recommendationBatchRepository,
 			SavedSearchRepository savedSearchRepository, PostingBookmarkRefRepository postingBookmarkRepository,
 			ShelterBookmarkRefRepository shelterBookmarkRepository, NotificationRefRepository notificationRepository,
-			FosterInquiryRepository fosterInquiryRepository) {
+			FosterInquiryRepository fosterInquiryRepository, ApplicationService applicationService) {
 		this.userRepository = userRepository;
 		this.passwordEncoder = passwordEncoder;
 		this.refreshTokenRepository = refreshTokenRepository;
@@ -62,6 +64,7 @@ public class UserService {
 		this.shelterBookmarkRepository = shelterBookmarkRepository;
 		this.notificationRepository = notificationRepository;
 		this.fosterInquiryRepository = fosterInquiryRepository;
+		this.applicationService = applicationService;
 	}
 
 	@Transactional(readOnly = true)
@@ -117,6 +120,7 @@ public class UserService {
 		shelterBookmarkRepository.deleteByUserId(userId);
 		notificationRepository.deleteByUserId(userId);
 		fosterInquiryRepository.deleteByUserId(userId);
+		applicationService.releaseOnWithdraw(userId);
 
 		// 어떤 비밀번호로도 로그인할 수 없도록 아무도 모르는 값의 해시를 넣는다.
 		user.withdraw(passwordEncoder.encode(UUID.randomUUID().toString()), LocalDateTime.now());
