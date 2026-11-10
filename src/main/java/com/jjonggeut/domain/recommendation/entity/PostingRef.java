@@ -1,10 +1,13 @@
 package com.jjonggeut.domain.recommendation.entity;
 
+import com.jjonggeut.domain.posting.entity.FosterContactMethod;
 import com.jjonggeut.domain.volunteerexperience.entity.ActivityCategory;
 import com.jjonggeut.domain.volunteerexperience.entity.ActivityCategoryListConverter;
 import jakarta.persistence.Column;
 import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
@@ -64,6 +67,54 @@ public class PostingRef {
 	@Column(name = "applicant_count")
 	private Integer applicantCount;
 
+	// ---- 모집공고 API 가 쓰는 상세 정보. 값이 없는 옛 행도 읽을 수 있도록 모두 null 을 허용한다. ----
+
+	@Column(name = "description", length = 2000)
+	private String description;
+
+	@Column(name = "urgent")
+	private Boolean urgent;
+
+	/** 클수록 먼저 보여 줄 긴급 우선순위. */
+	@Column(name = "urgent_priority")
+	private Integer urgentPriority;
+
+	@Column(name = "recruit_end_at")
+	private LocalDateTime recruitEndAt;
+
+	@Column(name = "activity_end_at")
+	private LocalDateTime activityEndAt;
+
+	/** 경험 없이 참여할 수 있는지. 없으면 가능한 것으로 본다. */
+	@Column(name = "beginner_friendly")
+	private Boolean beginnerFriendly;
+
+	@Column(name = "min_age")
+	private Integer minAge;
+
+	@Column(name = "requirements", length = 1000)
+	private String requirements;
+
+	/** 공개 여부. 없으면 공개로 본다. */
+	@Column(name = "is_public")
+	private Boolean publicPosting;
+
+	@Column(name = "donation_url", length = 500)
+	private String donationUrl;
+
+	@Column(name = "donation_purpose", length = 255)
+	private String donationPurpose;
+
+	@Enumerated(EnumType.STRING)
+	@Column(name = "contact_method", length = 20)
+	private FosterContactMethod contactMethod;
+
+	@Column(name = "external_url", length = 500)
+	private String externalUrl;
+
+	@Column(name = "created_at")
+	private LocalDateTime createdAt;
+
 	public static PostingRef of(Long postingId, Long shelterId, String postingType, String title, String status,
 			List<ActivityCategory> activityCategories, String animalType, LocalDateTime activityStartAt,
 			Integer capacity, Integer applicantCount) {
@@ -79,5 +130,65 @@ public class PostingRef {
 		posting.capacity = capacity;
 		posting.applicantCount = applicantCount;
 		return posting;
+	}
+
+	// ---- 테스트와 임시 데이터용: 저장하기 전에 상세 정보를 채운다. ----
+
+	public PostingRef withDescription(String description, LocalDateTime createdAt) {
+		this.description = description;
+		this.createdAt = createdAt;
+		return this;
+	}
+
+	public PostingRef withUrgent(boolean urgent, int urgentPriority) {
+		this.urgent = urgent;
+		this.urgentPriority = urgentPriority;
+		return this;
+	}
+
+	public PostingRef withPeriod(LocalDateTime recruitEndAt, LocalDateTime activityEndAt) {
+		this.recruitEndAt = recruitEndAt;
+		this.activityEndAt = activityEndAt;
+		return this;
+	}
+
+	public PostingRef withConditions(boolean beginnerFriendly, Integer minAge, String requirements) {
+		this.beginnerFriendly = beginnerFriendly;
+		this.minAge = minAge;
+		this.requirements = requirements;
+		return this;
+	}
+
+	public PostingRef withPublic(boolean publicPosting) {
+		this.publicPosting = publicPosting;
+		return this;
+	}
+
+	public PostingRef withSponsor(String donationUrl, String donationPurpose) {
+		this.donationUrl = donationUrl;
+		this.donationPurpose = donationPurpose;
+		return this;
+	}
+
+	public PostingRef withFoster(FosterContactMethod contactMethod, String externalUrl) {
+		this.contactMethod = contactMethod;
+		this.externalUrl = externalUrl;
+		return this;
+	}
+
+	public boolean isUrgent() {
+		return Boolean.TRUE.equals(urgent);
+	}
+
+	public int getUrgentPriority() {
+		return urgentPriority == null ? 0 : urgentPriority;
+	}
+
+	public boolean isBeginnerFriendly() {
+		return beginnerFriendly == null || beginnerFriendly;
+	}
+
+	public boolean isPublicPosting() {
+		return publicPosting == null || publicPosting;
 	}
 }
