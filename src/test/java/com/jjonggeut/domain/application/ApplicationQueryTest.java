@@ -8,11 +8,16 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.jjonggeut.domain.activity.entity.ApplicationAnswer;
 import com.jjonggeut.domain.activity.entity.ApplicationStatus;
 import com.jjonggeut.domain.activity.entity.VolunteerApplicationRef;
+import com.jjonggeut.domain.application.entity.ApplicationExperience;
 import com.jjonggeut.domain.application.entity.ApplicationStatusHistory;
 import com.jjonggeut.domain.application.entity.StatusActor;
+import com.jjonggeut.domain.application.repository.ApplicationExperienceRepository;
 import com.jjonggeut.domain.posting.entity.PostingApplicationQuestion;
 import com.jjonggeut.domain.posting.entity.QuestionType;
 import com.jjonggeut.domain.posting.repository.PostingApplicationQuestionRepository;
+import com.jjonggeut.domain.volunteerexperience.entity.ActivityCategory;
+import com.jjonggeut.domain.volunteerexperience.entity.VolunteerExperience;
+import com.jjonggeut.domain.volunteerexperience.repository.VolunteerExperienceRepository;
 import java.time.LocalDateTime;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
@@ -32,6 +37,12 @@ class ApplicationQueryTest extends ApplicationTestBase {
 
 	@Autowired
 	PostingApplicationQuestionRepository questionRepository;
+
+	@Autowired
+	VolunteerExperienceRepository experienceRepository;
+
+	@Autowired
+	ApplicationExperienceRepository applicationExperienceRepository;
 
 	Long scheduleId;
 
@@ -232,6 +243,27 @@ class ApplicationQueryTest extends ApplicationTestBase {
 				.andExpect(jsonPath("$.data.schedule").isEmpty())
 				.andExpect(jsonPath("$.data.cancelDeadlineAt").isEmpty())
 				.andExpect(jsonPath("$.data.cancellable").value(true));
+	}
+
+	@Test
+	void 경험을_첨부하지_않은_신청은_상세에서_experience가_null이다() throws Exception {
+		Long id = application(user, 501, null, ApplicationStatus.PENDING);
+
+		detail(id).andExpect(status().isOk()).andExpect(jsonPath("$.data.experience").isEmpty());
+	}
+
+	@Test
+	void 첨부한_경험은_상세에서_스냅샷으로_보인다() throws Exception {
+		VolunteerExperience experience = experienceRepository.saveAndFlush(VolunteerExperience.create(
+				user.getUserId(), List.of(ActivityCategory.WALK), "성북 행복보호소", "2026.01",
+				"강아지 산책 봉사를 했습니다.", null));
+		Long id = application(user, 501, null, ApplicationStatus.PENDING);
+		applicationExperienceRepository.saveAndFlush(
+				ApplicationExperience.of(id, experience.getExperienceId(), "강아지 산책 봉사를 했습니다."));
+
+		detail(id).andExpect(status().isOk())
+				.andExpect(jsonPath("$.data.experience.experienceId").value(experience.getExperienceId()))
+				.andExpect(jsonPath("$.data.experience.snapshot").value("강아지 산책 봉사를 했습니다."));
 	}
 
 	@Test

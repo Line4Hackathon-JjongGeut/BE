@@ -8,9 +8,11 @@ import com.jjonggeut.domain.application.dto.ApplicationCancelRequest;
 import com.jjonggeut.domain.application.dto.ApplicationCancelResponse;
 import com.jjonggeut.domain.application.dto.ApplicationRequest;
 import com.jjonggeut.domain.application.dto.ApplicationResponse;
+import com.jjonggeut.domain.application.entity.ApplicationExperience;
 import com.jjonggeut.domain.application.entity.ApplicationStatusHistory;
 import com.jjonggeut.domain.application.entity.StatusActor;
 import com.jjonggeut.domain.application.exception.ApplicationErrorCode;
+import com.jjonggeut.domain.application.repository.ApplicationExperienceRepository;
 import com.jjonggeut.domain.application.repository.ApplicationStatusHistoryRepository;
 import com.jjonggeut.domain.posting.entity.PostingApplicationQuestion;
 import com.jjonggeut.domain.posting.entity.PostingSchedule;
@@ -21,6 +23,8 @@ import com.jjonggeut.domain.recommendation.entity.ActivityEventType;
 import com.jjonggeut.domain.recommendation.entity.PostingRef;
 import com.jjonggeut.domain.recommendation.repository.PostingRefRepository;
 import com.jjonggeut.domain.recommendation.service.ActivityEventService;
+import com.jjonggeut.domain.volunteerexperience.entity.VolunteerExperience;
+import com.jjonggeut.domain.volunteerexperience.repository.VolunteerExperienceRepository;
 import com.jjonggeut.global.exception.BusinessException;
 import com.jjonggeut.global.exception.ErrorCode;
 import java.time.LocalDateTime;
@@ -45,17 +49,22 @@ public class ApplicationService {
 	private final PostingRefRepository postingRepository;
 	private final PostingApplicationQuestionRepository questionRepository;
 	private final ActivityEventService activityEventService;
+	private final VolunteerExperienceRepository experienceRepository;
+	private final ApplicationExperienceRepository applicationExperienceRepository;
 
 	public ApplicationService(VolunteerApplicationRefRepository applicationRepository,
 			ApplicationStatusHistoryRepository historyRepository, PostingScheduleRepository scheduleRepository,
 			PostingRefRepository postingRepository, PostingApplicationQuestionRepository questionRepository,
-			ActivityEventService activityEventService) {
+			ActivityEventService activityEventService, VolunteerExperienceRepository experienceRepository,
+			ApplicationExperienceRepository applicationExperienceRepository) {
 		this.applicationRepository = applicationRepository;
 		this.historyRepository = historyRepository;
 		this.scheduleRepository = scheduleRepository;
 		this.postingRepository = postingRepository;
 		this.questionRepository = questionRepository;
 		this.activityEventService = activityEventService;
+		this.experienceRepository = experienceRepository;
+		this.applicationExperienceRepository = applicationExperienceRepository;
 	}
 
 	/** 승인 대기 상태로 접수한다. request 가 없으면 답변도 전할 말도 없는 신청이다. */
@@ -83,6 +92,8 @@ public class ApplicationService {
 		List<ApplicationAnswer> answers = validateAnswers(posting.getPostingId(),
 				request == null ? null : request.answers());
 		String message = request == null ? null : emptyToNull(request.message());
+		Long experienceId = request == null ? null : request.experienceId();
+		VolunteerExperience experience = experienceId == null ? null : requireMyExperience(userId, experienceId);
 
 		if (scheduleRepository.increaseApplied(scheduleId) == 0) {
 			throw new BusinessException(ApplicationErrorCode.SCHEDULE_FULL);
@@ -93,6 +104,9 @@ public class ApplicationService {
 				posting.getPostingId(), scheduleId, answers, message, now));
 		historyRepository.save(ApplicationStatusHistory.of(application.getApplicationId(), null,
 				ApplicationStatus.PENDING, StatusActor.USER, null, now));
+		if (experience != null) {
+			attachExperience(application.getApplicationId(), experience);
+		}
 		activityEventService.record(userId, new ActivityEventRequest(ActivityEventType.APPLY,
 				posting.getPostingId(), posting.getShelterId(), null, null));
 
@@ -187,6 +201,20 @@ public class ApplicationService {
 			case MULTI_CHOICE -> !values.isEmpty() && new HashSet<>(values).size() == values.size()
 					&& options.containsAll(values);
 		};
+	}
+
+	/** 신청서에 지정한 경험의 소유를 확인한다. 정원·공고 카운트를 올리기 전에 먼저 검증한다. */
+	private VolunteerExperience requireMyExperience(Long userId, Long experienceId) {
+		return experienceRepository.findByExperienceIdAndUserIdAndDeletedAtIsNull(experienceId, userId)
+				.orElseThrow(() -> new BusinessException(ApplicationErrorCode.EXPERIENCE_NOT_FOUND));
+	}
+
+	/** 그 시점 내용을 스냅샷으로 남긴다. 원본이 나중에 수정·삭제돼도 신청 내역은 그대로 남아야 한다. */
+	private void attachExperience(Long applicationId, VolunteerExperience experience) {
+		String snapshot = experience.getContentSummary() != null ? experience.getContentSummary()
+				: experience.getContentRaw();
+		applicationExperienceRepository.save(ApplicationExperience.of(applicationId, experience.getExperienceId(),
+				snapshot));
 	}
 
 	private String emptyToNull(String value) {

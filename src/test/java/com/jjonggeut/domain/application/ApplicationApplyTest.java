@@ -6,6 +6,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.jjonggeut.domain.activity.entity.ApplicationStatus;
+import com.jjonggeut.domain.application.repository.ApplicationExperienceRepository;
 import com.jjonggeut.domain.posting.entity.PostingApplicationQuestion;
 import com.jjonggeut.domain.posting.entity.QuestionType;
 import com.jjonggeut.domain.posting.repository.PostingApplicationQuestionRepository;
@@ -13,6 +14,8 @@ import com.jjonggeut.domain.recommendation.entity.ActivityEventType;
 import com.jjonggeut.domain.recommendation.entity.PostingRef;
 import com.jjonggeut.domain.recommendation.repository.UserActivityEventRepository;
 import com.jjonggeut.domain.volunteerexperience.entity.ActivityCategory;
+import com.jjonggeut.domain.volunteerexperience.entity.VolunteerExperience;
+import com.jjonggeut.domain.volunteerexperience.repository.VolunteerExperienceRepository;
 import java.time.LocalDateTime;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
@@ -35,6 +38,12 @@ class ApplicationApplyTest extends ApplicationTestBase {
 
 	@Autowired
 	UserActivityEventRepository eventRepository;
+
+	@Autowired
+	VolunteerExperienceRepository experienceRepository;
+
+	@Autowired
+	ApplicationExperienceRepository applicationExperienceRepository;
 
 	Long open;
 
@@ -79,6 +88,32 @@ class ApplicationApplyTest extends ApplicationTestBase {
 		assertThat(events.get(0).getEventType()).isEqualTo(ActivityEventType.APPLY);
 		assertThat(events.get(0).getPostingId()).isEqualTo(501L);
 		assertThat(events.get(0).getShelterId()).isEqualTo(1L);
+	}
+
+	@Test
+	void 경험을_지정하면_스냅샷으로_저장한다() throws Exception {
+		VolunteerExperience experience = experienceRepository.saveAndFlush(VolunteerExperience.create(
+				user.getUserId(), List.of(ActivityCategory.WALK), "성북 행복보호소", "2026.01",
+				"강아지 산책 봉사를 했습니다.", "강아지 산책 봉사 참여."));
+
+		ResultActions result = apply(open, "{\"experienceId\":" + experience.getExperienceId() + "}");
+		result.andExpect(status().isOk());
+
+		Long applicationId = applicationRepository.findAll().get(0).getApplicationId();
+		var saved = applicationExperienceRepository.findByApplicationId(applicationId).orElseThrow();
+		assertThat(saved.getExperienceId()).isEqualTo(experience.getExperienceId());
+		assertThat(saved.getExperienceSnapshot()).isEqualTo("강아지 산책 봉사 참여.");
+	}
+
+	@Test
+	void 남의_경험을_지정하면_404() throws Exception {
+		VolunteerExperience othersExperience = experienceRepository.saveAndFlush(VolunteerExperience.create(
+				other.getUserId(), List.of(ActivityCategory.WALK), null, null, "다른 사람의 경험입니다.", null));
+
+		apply(open, "{\"experienceId\":" + othersExperience.getExperienceId() + "}")
+				.andExpect(status().isNotFound())
+				.andExpect(jsonPath("$.code").value("APPLICATION_404_3"));
+		assertThat(applicationRepository.count()).isZero();
 	}
 
 	@Test

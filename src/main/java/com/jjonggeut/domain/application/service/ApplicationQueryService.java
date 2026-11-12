@@ -11,6 +11,7 @@ import com.jjonggeut.domain.application.dto.ApplicationListItem;
 import com.jjonggeut.domain.application.dto.StatusHistoryItem;
 import com.jjonggeut.domain.application.dto.StatusHistoryResponse;
 import com.jjonggeut.domain.application.exception.ApplicationErrorCode;
+import com.jjonggeut.domain.application.repository.ApplicationExperienceRepository;
 import com.jjonggeut.domain.application.repository.ApplicationStatusHistoryRepository;
 import com.jjonggeut.domain.posting.entity.PostingApplicationQuestion;
 import com.jjonggeut.domain.posting.entity.PostingSchedule;
@@ -48,17 +49,20 @@ public class ApplicationQueryService {
 	private final PostingRefRepository postingRepository;
 	private final ShelterRefRepository shelterRepository;
 	private final PostingApplicationQuestionRepository questionRepository;
+	private final ApplicationExperienceRepository applicationExperienceRepository;
 
 	public ApplicationQueryService(VolunteerApplicationRefRepository applicationRepository,
 			ApplicationStatusHistoryRepository historyRepository, PostingScheduleRepository scheduleRepository,
 			PostingRefRepository postingRepository, ShelterRefRepository shelterRepository,
-			PostingApplicationQuestionRepository questionRepository) {
+			PostingApplicationQuestionRepository questionRepository,
+			ApplicationExperienceRepository applicationExperienceRepository) {
 		this.applicationRepository = applicationRepository;
 		this.historyRepository = historyRepository;
 		this.scheduleRepository = scheduleRepository;
 		this.postingRepository = postingRepository;
 		this.shelterRepository = shelterRepository;
 		this.questionRepository = questionRepository;
+		this.applicationExperienceRepository = applicationExperienceRepository;
 	}
 
 	/** status 는 상태 하나이거나 묶음(ONGOING, HISTORY)이고, 생략하면 전체다. */
@@ -104,7 +108,13 @@ public class ApplicationQueryService {
 						shelter.getAddress(), verified ? shelter.getPhone() : null),
 				scheduleInfo, posting.getPreparations(),
 				ApplicationPolicy.cancellable(application, startAt, LocalDateTime.now()),
-				ApplicationPolicy.cancelDeadline(startAt), historyItems(applicationId));
+				ApplicationPolicy.cancelDeadline(startAt), historyItems(applicationId), experienceInfo(applicationId));
+	}
+
+	private ApplicationDetailResponse.ExperienceInfo experienceInfo(Long applicationId) {
+		return applicationExperienceRepository.findByApplicationId(applicationId)
+				.map(e -> new ApplicationDetailResponse.ExperienceInfo(e.getExperienceId(), e.getExperienceSnapshot()))
+				.orElse(null);
 	}
 
 	public StatusHistoryResponse statusHistory(Long userId, Long applicationId) {

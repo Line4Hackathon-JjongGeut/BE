@@ -16,9 +16,14 @@ public record ApplicationDetailResponse(
 		List<String> preparations,
 		boolean cancellable,
 		LocalDateTime cancelDeadlineAt,
-		List<StatusHistoryItem> statusHistory) {
+		List<StatusHistoryItem> statusHistory,
+		ExperienceInfo experience) {
 
 	public record AnswerItem(Long questionId, String label, List<String> values) {
+	}
+
+	/** 신청 당시 첨부한 경험 스냅샷. experienceId 는 원본이 삭제되면 null 이다. */
+	public record ExperienceInfo(Long experienceId, String snapshot) {
 	}
 
 	public record PostingInfo(Long postingId, String title, String postingType, String status) {

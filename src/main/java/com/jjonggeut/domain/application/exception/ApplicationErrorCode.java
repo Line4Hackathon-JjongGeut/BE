@@ -7,6 +7,7 @@ public enum ApplicationErrorCode implements BaseErrorCode {
 
 	APPLICATION_NOT_FOUND(HttpStatus.NOT_FOUND, "APPLICATION_404_1", "봉사 신청을 찾을 수 없습니다."),
 	SCHEDULE_NOT_FOUND(HttpStatus.NOT_FOUND, "APPLICATION_404_2", "봉사 일정을 찾을 수 없습니다."),
+	EXPERIENCE_NOT_FOUND(HttpStatus.NOT_FOUND, "APPLICATION_404_3", "첨부하려는 봉사 경험을 찾을 수 없습니다."),
 	INVALID_ANSWER(HttpStatus.BAD_REQUEST, "APPLICATION_400_1", "신청서 답변이 질문과 맞지 않습니다."),
 	ALREADY_APPLIED(HttpStatus.CONFLICT, "APPLICATION_409_1", "이미 신청한 일정입니다."),
 	SCHEDULE_FULL(HttpStatus.CONFLICT, "APPLICATION_409_2", "정원이 가득 찬 일정입니다."),
