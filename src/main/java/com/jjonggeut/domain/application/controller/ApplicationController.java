@@ -38,7 +38,8 @@ public class ApplicationController {
 	}
 
 	@Operation(summary = "봉사 신청",
-			description = "정원과 중복 신청을 검증하고 봉사 신청을 승인 대기 상태로 접수한다. 필수 질문이 있으면 answers 로 답해야 한다.")
+			description = "정원과 중복 신청을 검증하고 봉사 신청을 승인 대기 상태로 접수한다. 필수 질문이 있으면 answers 로 답해야 한다. "
+					+ "experienceId 를 지정하면 그 시점 내용을 스냅샷으로 함께 저장한다.")
 	@PostMapping("/api/v1/schedules/{scheduleId}/applications")
 	public ApiResponse<ApplicationResponse> apply(@AuthenticationPrincipal Long userId,
 			@PathVariable Long scheduleId, @Valid @RequestBody(required = false) ApplicationRequest request) {
@@ -62,7 +63,7 @@ public class ApplicationController {
 		return ApiResponse.success(queryService.list(userId, status, page, size));
 	}
 
-	@Operation(summary = "봉사 신청 상세 조회", description = "내 신청 정보, 상태, 일정, 준비물과 변경 이력을 조회한다.")
+	@Operation(summary = "봉사 신청 상세 조회", description = "내 신청 정보, 상태, 일정, 준비물, 첨부한 경험과 변경 이력을 조회한다.")
 	@GetMapping("/api/v1/applications/{applicationId}")
 	public ApiResponse<ApplicationDetailResponse> detail(@AuthenticationPrincipal Long userId,
 			@PathVariable Long applicationId) {
