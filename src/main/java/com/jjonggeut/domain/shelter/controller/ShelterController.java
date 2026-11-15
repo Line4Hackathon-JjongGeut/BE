@@ -6,23 +6,18 @@ import com.jjonggeut.domain.shelter.dto.ShelterBookmarkResponse;
 import com.jjonggeut.domain.shelter.dto.ShelterDetailResponse;
 import com.jjonggeut.domain.shelter.dto.ShelterListItem;
 import com.jjonggeut.domain.shelter.dto.ShelterPostingItem;
-import com.jjonggeut.domain.shelter.dto.ShelterReportRequest;
-import com.jjonggeut.domain.shelter.dto.ShelterReportResponse;
 import com.jjonggeut.domain.shelter.service.ShelterBookmarkService;
 import com.jjonggeut.domain.shelter.service.ShelterPostingQueryService;
-import com.jjonggeut.domain.shelter.service.ShelterReportService;
 import com.jjonggeut.domain.shelter.service.ShelterQueryService;
 import com.jjonggeut.global.response.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -36,14 +31,12 @@ public class ShelterController {
 	private final ShelterQueryService shelterService;
 	private final ShelterPostingQueryService postingService;
 	private final ShelterBookmarkService bookmarkService;
-	private final ShelterReportService reportService;
 
 	public ShelterController(ShelterQueryService shelterService, ShelterPostingQueryService postingService,
-			ShelterBookmarkService bookmarkService, ShelterReportService reportService) {
+			ShelterBookmarkService bookmarkService) {
 		this.shelterService = shelterService;
 		this.postingService = postingService;
 		this.bookmarkService = bookmarkService;
-		this.reportService = reportService;
 	}
 
 	@Operation(summary = "보호시설 목록 조회",
@@ -96,13 +89,5 @@ public class ShelterController {
 	public ApiResponse<Void> removeBookmark(@AuthenticationPrincipal Long userId, @PathVariable Long shelterId) {
 		bookmarkService.remove(userId, shelterId);
 		return ApiResponse.success();
-	}
-
-	@Operation(summary = "보호시설 신고",
-			description = "잘못된 시설 정보, 사기, 개인정보 문제 등을 관리자에게 신고한다. 같은 유형의 처리 중인 신고가 있으면 409.")
-	@PostMapping("/{shelterId}/reports")
-	public ApiResponse<ShelterReportResponse> report(@AuthenticationPrincipal Long userId,
-			@PathVariable Long shelterId, @Valid @RequestBody ShelterReportRequest request) {
-		return ApiResponse.success(reportService.report(userId, shelterId, request));
 	}
 }
