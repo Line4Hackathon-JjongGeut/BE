@@ -18,6 +18,7 @@ public record ShelterListItem(
 		VerificationStatus verificationStatus,
 		Double distanceKm,
 		long openPostingCount,
-		boolean bookmarked
+		boolean bookmarked,
+		String thumbnailUrl
 ) {
 }

@@ -21,5 +21,6 @@ public record PostingSummaryItem(
 		Integer remainingCount,
 		boolean beginnerFriendly,
 		Double distanceKm,
-		boolean bookmarked) {
+		boolean bookmarked,
+		String thumbnailUrl) {
 }

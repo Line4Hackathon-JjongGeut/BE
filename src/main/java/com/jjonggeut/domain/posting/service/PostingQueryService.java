@@ -9,6 +9,7 @@ import com.jjonggeut.domain.posting.entity.FosterContactMethod;
 import com.jjonggeut.domain.posting.entity.PostingType;
 import com.jjonggeut.domain.posting.exception.PostingErrorCode;
 import com.jjonggeut.domain.posting.repository.PostingApplicationQuestionRepository;
+import com.jjonggeut.domain.posting.repository.PostingMediaRepository;
 import com.jjonggeut.domain.posting.repository.PostingScheduleRepository;
 import com.jjonggeut.domain.recommendation.entity.PostingRef;
 import com.jjonggeut.domain.recommendation.entity.ShelterRef;
@@ -32,15 +33,17 @@ public class PostingQueryService {
 	private final PostingBookmarkRefRepository bookmarkRepository;
 	private final PostingScheduleRepository scheduleRepository;
 	private final PostingApplicationQuestionRepository questionRepository;
+	private final PostingMediaRepository mediaRepository;
 
 	public PostingQueryService(PostingLookup postingLookup, ShelterRefRepository shelterRepository,
 			PostingBookmarkRefRepository bookmarkRepository, PostingScheduleRepository scheduleRepository,
-			PostingApplicationQuestionRepository questionRepository) {
+			PostingApplicationQuestionRepository questionRepository, PostingMediaRepository mediaRepository) {
 		this.postingLookup = postingLookup;
 		this.shelterRepository = shelterRepository;
 		this.bookmarkRepository = bookmarkRepository;
 		this.scheduleRepository = scheduleRepository;
 		this.questionRepository = questionRepository;
+		this.mediaRepository = mediaRepository;
 	}
 
 	public PostingDetailResponse detail(Long userId, Long postingId, Double latitude, Double longitude) {
@@ -82,9 +85,11 @@ public class PostingQueryService {
 		}
 
 		boolean bookmarked = !bookmarkRepository.findBookmarkedPostingIds(userId, List.of(postingId)).isEmpty();
+		List<String> imageUrls = mediaRepository.findByPostingIdInOrderByPostingIdAscPositionAsc(List.of(postingId))
+				.stream().map(m -> m.getUrl()).toList();
 		return new PostingDetailResponse(posting.getPostingId(), type, posting.getTitle(), posting.getStatus(),
 				posting.isUrgent(), posting.getDescription(), posting.getAnimalType(), posting.getRecruitEndAt(),
-				posting.getCreatedAt(), shelterInfo, distance, bookmarked, volunteer, sponsor, foster);
+				posting.getCreatedAt(), shelterInfo, distance, bookmarked, volunteer, sponsor, foster, imageUrls);
 	}
 
 	public PostingScheduleResponse schedules(Long postingId) {
