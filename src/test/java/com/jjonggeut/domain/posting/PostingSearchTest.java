@@ -40,17 +40,17 @@ class PostingSearchTest extends PostingTestBase {
 		posting(101, 1, "VOLUNTEER", "OPEN", "주말 강아지 산책", List.of(ActivityCategory.WALK), "DOG",
 				LocalDateTime.of(2026, 12, 10, 10, 0), 10, 2)
 				.withPeriod(LocalDateTime.of(2026, 12, 8, 18, 0), null);
-		posting(102, 1, "VOLUNTEER", "OPEN", "고양이 급식 도우미", List.of(ActivityCategory.FEEDING), "CAT",
+		posting(102, 1, "VOLUNTEER", "OPEN", "고양이 급식 도우미", List.of(ActivityCategory.FEEDING_CARE), "CAT",
 				LocalDateTime.of(2026, 12, 20, 10, 0), 5, 5)
 				.withUrgent(true, 50).withConditions(false, 18, "경험자")
 				.withPeriod(LocalDateTime.of(2026, 12, 15, 18, 0), null);
 		posting(103, 2, "SPONSOR", "OPEN", "겨울 담요 후원", List.of(ActivityCategory.ETC), "ALL", null, null, null)
 				.withUrgent(true, 100).withPeriod(LocalDateTime.of(2026, 12, 5, 18, 0), null)
 				.withSponsor("https://example.org/donate", "담요 구입");
-		posting(104, 2, "FOSTER", "OPEN", "새끼 고양이 임시보호", List.of(ActivityCategory.CARE), "CAT",
+		posting(104, 2, "FOSTER", "OPEN", "새끼 고양이 임시보호", List.of(ActivityCategory.FEEDING_CARE), "CAT",
 				LocalDateTime.of(2026, 12, 12, 10, 0), 3, 0)
 				.withUrgent(true, 70);
-		posting(105, 3, "VOLUNTEER", "OPEN", "대형견 케어", List.of(ActivityCategory.CARE, ActivityCategory.WALK),
+		posting(105, 3, "VOLUNTEER", "OPEN", "대형견 케어", List.of(ActivityCategory.FEEDING_CARE, ActivityCategory.WALK),
 				"DOG", LocalDateTime.of(2026, 12, 10, 15, 0), 8, 1)
 				.withPeriod(LocalDateTime.of(2026, 12, 9, 18, 0), null);
 		posting(106, 4, "VOLUNTEER", "OPEN", "해변 산책 봉사", List.of(ActivityCategory.WALK), "DOG",
@@ -138,8 +138,9 @@ class PostingSearchTest extends PostingTestBase {
 	@Test
 	void 활동_분류로_거르고_여러_개면_하나라도_겹치면_포함한다() throws Exception {
 		assertThat(search("activityCategories=WALK")).containsExactly(106L, 105L, 101L);
-		assertThat(search("activityCategories=FEEDING&activityCategories=ETC")).containsExactly(103L, 102L);
-		assertThat(search("activityCategories=FEEDING,ETC")).containsExactly(103L, 102L);
+		assertThat(search("activityCategories=FEEDING_CARE&activityCategories=ETC"))
+				.containsExactly(105L, 104L, 103L, 102L);
+		assertThat(search("activityCategories=FEEDING_CARE,ETC")).containsExactly(105L, 104L, 103L, 102L);
 	}
 
 	@Test
@@ -269,12 +270,12 @@ class PostingSearchTest extends PostingTestBase {
 		bookmarkRepository.save(PostingBookmarkRef.of(user.getUserId(), 101L, LocalDateTime.of(2026, 11, 1, 9, 0)));
 		bookmarkRepository.save(PostingBookmarkRef.of(other.getUserId(), 102L, LocalDateTime.of(2026, 11, 1, 9, 0)));
 
-		get("/api/v1/postings?activityCategories=WALK&activityCategories=FEEDING&sort=START_SOON")
+		get("/api/v1/postings?activityCategories=WALK&activityCategories=FEEDING_CARE&sort=START_SOON")
 				.andExpect(jsonPath("$.data.items[0].postingId").value(101))
 				.andExpect(jsonPath("$.data.items[0].bookmarked").value(true))
 				.andExpect(jsonPath("$.data.items[1].postingId").value(105))
 				.andExpect(jsonPath("$.data.items[1].bookmarked").value(false))
-				.andExpect(jsonPath("$.data.items[3].postingId").value(106))
+				.andExpect(jsonPath("$.data.items[4].postingId").value(106))
 				.andExpect(jsonPath("$.data.items[?(@.postingId==102)].bookmarked").value(false));
 	}
 

@@ -1,5 +1,6 @@
 package com.jjonggeut.domain.auth.service;
 
+import com.jjonggeut.domain.auth.dto.AvailabilityResponse;
 import com.jjonggeut.domain.auth.dto.LoginRequest;
 import com.jjonggeut.domain.auth.dto.LoginResponse;
 import com.jjonggeut.domain.auth.dto.PasswordChangeRequest;
@@ -45,6 +46,16 @@ public class AuthService {
 		this.refreshTokenRepository = refreshTokenRepository;
 		this.passwordEncoder = passwordEncoder;
 		this.jwtProvider = jwtProvider;
+	}
+
+	@Transactional(readOnly = true)
+	public AvailabilityResponse checkLoginIdAvailable(String loginId) {
+		return new AvailabilityResponse(!userRepository.existsByLoginId(loginId));
+	}
+
+	@Transactional(readOnly = true)
+	public AvailabilityResponse checkNicknameAvailable(String nickname) {
+		return new AvailabilityResponse(!userRepository.existsByNickname(nickname));
 	}
 
 	@Transactional

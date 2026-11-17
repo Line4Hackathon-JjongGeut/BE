@@ -1,5 +1,6 @@
 package com.jjonggeut.domain.auth.controller;
 
+import com.jjonggeut.domain.auth.dto.AvailabilityResponse;
 import com.jjonggeut.domain.auth.dto.LoginRequest;
 import com.jjonggeut.domain.auth.dto.LoginResponse;
 import com.jjonggeut.domain.auth.dto.PasswordChangeRequest;
@@ -16,10 +17,12 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @Tag(name = "인증")
@@ -31,6 +34,18 @@ public class AuthController {
 
 	public AuthController(AuthService authService) {
 		this.authService = authService;
+	}
+
+	@Operation(summary = "아이디 중복 확인", description = "회원가입 전에 아이디를 사용할 수 있는지 확인한다.")
+	@GetMapping("/login-id-availability")
+	public ApiResponse<AvailabilityResponse> checkLoginIdAvailable(@RequestParam String loginId) {
+		return ApiResponse.success(authService.checkLoginIdAvailable(loginId));
+	}
+
+	@Operation(summary = "닉네임 중복 확인", description = "회원가입 전에 닉네임을 사용할 수 있는지 확인한다.")
+	@GetMapping("/nickname-availability")
+	public ApiResponse<AvailabilityResponse> checkNicknameAvailable(@RequestParam String nickname) {
+		return ApiResponse.success(authService.checkNicknameAvailable(nickname));
 	}
 
 	@Operation(summary = "회원가입", description = "일반 사용자 계정을 생성한다.")

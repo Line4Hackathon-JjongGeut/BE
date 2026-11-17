@@ -44,7 +44,7 @@ class PostingDetailTest extends PostingTestBase {
 		shelter(1, "성북 행복보호소", "서울특별시", "성북구", 37.5894, 127.0167, VerificationStatus.VERIFIED);
 		shelter(2, "노원 온기쉼터", "서울특별시", "노원구", 37.6542, 127.0568, VerificationStatus.UNVERIFIED);
 
-		posting(201, 1, "VOLUNTEER", "OPEN", "주말 강아지 산책", List.of(ActivityCategory.WALK, ActivityCategory.CARE), "DOG",
+		posting(201, 1, "VOLUNTEER", "OPEN", "주말 강아지 산책", List.of(ActivityCategory.WALK, ActivityCategory.FEEDING_CARE), "DOG",
 				LocalDateTime.of(2026, 12, 10, 10, 0), 10, 3)
 				.withDescription("보호소 강아지들과 산책합니다.", LocalDateTime.of(2026, 11, 1, 9, 0))
 				.withUrgent(true, 80).withPeriod(LocalDateTime.of(2026, 12, 8, 18, 0), LocalDateTime.of(2026, 12, 10, 12, 0))
@@ -52,9 +52,9 @@ class PostingDetailTest extends PostingTestBase {
 		posting(202, 2, "SPONSOR", "OPEN", "겨울 담요 후원", List.of(ActivityCategory.ETC), "ALL", null, null, null)
 				.withSponsor("https://example.org/donate", "담요 구입");
 		posting(203, 2, "SPONSOR", "OPEN", "링크 없는 후원", List.of(ActivityCategory.ETC), "ALL", null, null, null);
-		posting(204, 1, "FOSTER", "OPEN", "임시보호자 모집", List.of(ActivityCategory.CARE), "CAT", null, 3, 0)
+		posting(204, 1, "FOSTER", "OPEN", "임시보호자 모집", List.of(ActivityCategory.FEEDING_CARE), "CAT", null, 3, 0)
 				.withFoster(FosterContactMethod.APP, null);
-		posting(205, 1, "FOSTER", "OPEN", "외부 문의 임시보호", List.of(ActivityCategory.CARE), "CAT", null, 3, 0)
+		posting(205, 1, "FOSTER", "OPEN", "외부 문의 임시보호", List.of(ActivityCategory.FEEDING_CARE), "CAT", null, 3, 0)
 				.withFoster(FosterContactMethod.EXTERNAL, "https://example.org/foster");
 		posting(206, 1, "VOLUNTEER", "OPEN", "비공개 공고", List.of(ActivityCategory.WALK), "DOG", null, 5, 0)
 				.withPublic(false);
@@ -87,7 +87,7 @@ class PostingDetailTest extends PostingTestBase {
 				.andExpect(jsonPath("$.data.shelter.phone").value("02-000-0001"))
 				.andExpect(jsonPath("$.data.shelter.verificationStatus").value("VERIFIED"))
 				.andExpect(jsonPath("$.data.volunteer.activityCategories[0]").value("WALK"))
-				.andExpect(jsonPath("$.data.volunteer.activityCategories[1]").value("CARE"))
+				.andExpect(jsonPath("$.data.volunteer.activityCategories[1]").value("FEEDING_CARE"))
 				.andExpect(jsonPath("$.data.volunteer.activityStartAt").value("2026-12-10T10:00:00"))
 				.andExpect(jsonPath("$.data.volunteer.activityEndAt").value("2026-12-10T12:00:00"))
 				.andExpect(jsonPath("$.data.volunteer.capacity").value(10))

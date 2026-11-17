@@ -92,7 +92,8 @@ public class RuleScorer {
 			}
 			if (hasSlots) {
 				checks++;
-				if (ctx.availableTimeSlots().contains(slotOf(start))) {
+				if (ctx.availableTimeSlots().contains(AvailableTimeSlot.ALL_DAY)
+						|| ctx.availableTimeSlots().contains(slotOf(start))) {
 					passed++;
 				}
 			}

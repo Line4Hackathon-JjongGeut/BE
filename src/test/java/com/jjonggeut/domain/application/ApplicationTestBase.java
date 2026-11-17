@@ -93,7 +93,7 @@ abstract class ApplicationTestBase {
 				null, 10, 0));
 		postings.add(PostingRef.of(503L, 1L, "VOLUNTEER", "비공개 봉사", "OPEN", List.of(ActivityCategory.WALK), "DOG",
 				null, 10, 0).withPublic(false));
-		postings.add(PostingRef.of(504L, 2L, "VOLUNTEER", "예전 봉사", "OPEN", List.of(ActivityCategory.CARE), "CAT",
+		postings.add(PostingRef.of(504L, 2L, "VOLUNTEER", "예전 봉사", "OPEN", List.of(ActivityCategory.FEEDING_CARE), "CAT",
 				LocalDateTime.now().plusDays(10).withNano(0), 10, 2)
 				.withPeriod(null, LocalDateTime.now().plusDays(10).plusHours(2).withNano(0)));
 		postingRepository.saveAll(postings);
