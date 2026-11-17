@@ -55,11 +55,11 @@ class PostingActionsTest extends PostingTestBase {
 				.withSponsor("https://example.org/donate", "담요 구입");
 		posting(402, 1, "SPONSOR", "OPEN", "링크 없는 후원", List.of(ActivityCategory.ETC), "ALL", null, null, null);
 		posting(403, 1, "VOLUNTEER", "OPEN", "산책 봉사", List.of(ActivityCategory.WALK), "DOG", null, 5, 0);
-		posting(404, 1, "FOSTER", "OPEN", "임시보호자 모집", List.of(ActivityCategory.CARE), "CAT", null, 1, 0)
+		posting(404, 1, "FOSTER", "OPEN", "임시보호자 모집", List.of(ActivityCategory.FEEDING_CARE), "CAT", null, 1, 0)
 				.withFoster(FosterContactMethod.APP, null);
-		posting(405, 1, "FOSTER", "OPEN", "외부 문의 임시보호", List.of(ActivityCategory.CARE), "CAT", null, 1, 0)
+		posting(405, 1, "FOSTER", "OPEN", "외부 문의 임시보호", List.of(ActivityCategory.FEEDING_CARE), "CAT", null, 1, 0)
 				.withFoster(FosterContactMethod.EXTERNAL, "https://example.org/foster");
-		posting(406, 1, "FOSTER", "CLOSED", "마감된 임시보호", List.of(ActivityCategory.CARE), "CAT", null, 1, 1)
+		posting(406, 1, "FOSTER", "CLOSED", "마감된 임시보호", List.of(ActivityCategory.FEEDING_CARE), "CAT", null, 1, 1)
 				.withFoster(FosterContactMethod.APP, null);
 		posting(407, 1, "SPONSOR", "OPEN", "비공개 후원", List.of(ActivityCategory.ETC), "ALL", null, null, null)
 				.withSponsor("https://example.org/private", "비공개").withPublic(false);

@@ -114,7 +114,7 @@ class SavedSearchTest {
 		create(token, """
 				{"name":"주말 산책","region":{"sido":"서울특별시","sigungu":"성북구","latitude":37.5894,"longitude":127.0167},
 				 "maxDistanceKm":10,"availableDays":["SAT","SUN"],"availableTimeSlots":["MORNING"],
-				 "activityCategories":["WALK","CARE"]}
+				 "activityCategories":["WALK","FEEDING_CARE"]}
 				""")
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.isSuccess").value(true))
@@ -127,7 +127,7 @@ class SavedSearchTest {
 				.andExpect(jsonPath("$.data.availableDays[0]").value("SAT"))
 				.andExpect(jsonPath("$.data.availableDays[1]").value("SUN"))
 				.andExpect(jsonPath("$.data.availableTimeSlots[0]").value("MORNING"))
-				.andExpect(jsonPath("$.data.activityCategories[1]").value("CARE"))
+				.andExpect(jsonPath("$.data.activityCategories[1]").value("FEEDING_CARE"))
 				.andExpect(jsonPath("$.data.isDefault").value(false))
 				.andExpect(jsonPath("$.data.createdAt").isNotEmpty());
 

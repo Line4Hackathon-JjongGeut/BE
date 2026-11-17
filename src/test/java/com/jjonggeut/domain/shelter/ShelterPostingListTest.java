@@ -85,7 +85,7 @@ class ShelterPostingListTest {
 	private void posting(long id, long shelterId, String type, String status, LocalDateTime startAt, Integer capacity,
 			Integer applicants) {
 		postingRepository.save(PostingRef.of(id, shelterId, type, "공고" + id, status,
-				List.of(ActivityCategory.WALK, ActivityCategory.CARE), "DOG", startAt, capacity, applicants));
+				List.of(ActivityCategory.WALK, ActivityCategory.FEEDING_CARE), "DOG", startAt, capacity, applicants));
 	}
 
 	@Test
@@ -118,7 +118,7 @@ class ShelterPostingListTest {
 				.andExpect(jsonPath("$.data.items[0].postingType").value("VOLUNTEER"))
 				.andExpect(jsonPath("$.data.items[0].title").value("공고101"))
 				.andExpect(jsonPath("$.data.items[0].activityCategories[0]").value("WALK"))
-				.andExpect(jsonPath("$.data.items[0].activityCategories[1]").value("CARE"))
+				.andExpect(jsonPath("$.data.items[0].activityCategories[1]").value("FEEDING_CARE"))
 				.andExpect(jsonPath("$.data.items[0].animalType").value("DOG"))
 				.andExpect(jsonPath("$.data.items[0].activityStartAt").value("2026-12-20T10:00:00"))
 				.andExpect(jsonPath("$.data.items[0].capacity").value(10))

@@ -193,9 +193,9 @@ class RecommendationTest {
 	@Test
 	void 봉사_경험과_같은_활동은_경험_연계로_반영된다() throws Exception {
 		profile(List.of(), 10, HOME_LAT, HOME_LON);
-		experienceRepository.save(VolunteerExperience.create(user.getUserId(), List.of(ActivityCategory.FEEDING),
+		experienceRepository.save(VolunteerExperience.create(user.getUserId(), List.of(ActivityCategory.FEEDING_CARE),
 				null, null, "급식 봉사를 했어요.", null));
-		posting(1, 1, "배식 봉사", List.of(ActivityCategory.FEEDING), null, 10, 2);
+		posting(1, 1, "배식 봉사", List.of(ActivityCategory.FEEDING_CARE), null, 10, 2);
 		posting(2, 1, "산책 봉사", List.of(ActivityCategory.WALK), null, 10, 2);
 
 		recommend("")

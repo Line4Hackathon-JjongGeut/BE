@@ -4,5 +4,6 @@ package com.jjonggeut.domain.profile.entity;
 public enum AvailableTimeSlot {
 	MORNING,
 	AFTERNOON,
-	EVENING
+	EVENING,
+	ALL_DAY
 }

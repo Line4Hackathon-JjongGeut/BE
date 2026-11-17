@@ -5,8 +5,8 @@ public enum ActivityCategory {
 	WALK,
 	CLEANING,
 	GROOMING,
-	FEEDING,
-	CARE,
+	FEEDING_CARE,
+	PHOTO,
 	TRANSPORT,
 	ETC
 }
