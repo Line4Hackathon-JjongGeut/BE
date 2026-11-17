@@ -23,7 +23,8 @@ public record PostingDetailResponse(
 		boolean bookmarked,
 		VolunteerInfo volunteer,
 		SponsorInfo sponsor,
-		FosterInfo foster) {
+		FosterInfo foster,
+		List<String> imageUrls) {
 
 	/** 연락처(phone)는 인증된 시설만 내려간다. */
 	public record ShelterInfo(

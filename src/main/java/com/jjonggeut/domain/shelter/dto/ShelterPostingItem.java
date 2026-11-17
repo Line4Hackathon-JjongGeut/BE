@@ -15,5 +15,6 @@ public record ShelterPostingItem(
 		Integer capacity,
 		Integer applicantCount,
 		Integer remainingCount,
-		boolean bookmarked) {
+		boolean bookmarked,
+		String thumbnailUrl) {
 }

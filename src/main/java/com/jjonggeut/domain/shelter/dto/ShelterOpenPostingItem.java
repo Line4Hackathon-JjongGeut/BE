@@ -9,5 +9,6 @@ public record ShelterOpenPostingItem(
 		String title,
 		LocalDateTime activityStartAt,
 		Integer capacity,
-		Integer applicantCount) {
+		Integer applicantCount,
+		String thumbnailUrl) {
 }

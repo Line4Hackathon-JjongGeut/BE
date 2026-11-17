@@ -7,7 +7,9 @@ import com.jjonggeut.domain.activity.service.PageParams;
 import com.jjonggeut.domain.posting.dto.PostingListResponse;
 import com.jjonggeut.domain.posting.dto.PostingShelterSummary;
 import com.jjonggeut.domain.posting.dto.PostingSummaryItem;
+import com.jjonggeut.domain.posting.entity.PostingMedia;
 import com.jjonggeut.domain.posting.entity.PostingType;
+import com.jjonggeut.domain.posting.repository.PostingMediaRepository;
 import com.jjonggeut.domain.profile.entity.InterestAnimal;
 import com.jjonggeut.domain.recommendation.entity.PostingRef;
 import com.jjonggeut.domain.recommendation.entity.ShelterRef;
@@ -67,12 +69,14 @@ public class PostingSearchService {
 	private final PostingRefRepository postingRepository;
 	private final ShelterRefRepository shelterRepository;
 	private final PostingBookmarkRefRepository bookmarkRepository;
+	private final PostingMediaRepository mediaRepository;
 
 	public PostingSearchService(PostingRefRepository postingRepository, ShelterRefRepository shelterRepository,
-			PostingBookmarkRefRepository bookmarkRepository) {
+			PostingBookmarkRefRepository bookmarkRepository, PostingMediaRepository mediaRepository) {
 		this.postingRepository = postingRepository;
 		this.shelterRepository = shelterRepository;
 		this.bookmarkRepository = bookmarkRepository;
+		this.mediaRepository = mediaRepository;
 	}
 
 	public PageResponse<PostingSummaryItem> search(Long userId, Query query) {
@@ -214,8 +218,12 @@ public class PostingSearchService {
 	private List<PostingSummaryItem> toItems(Long userId, List<Candidate> page) {
 		List<Long> ids = page.stream().map(c -> c.posting().getPostingId()).toList();
 		Set<Long> bookmarked = new HashSet<>();
+		Map<Long, String> thumbnails = new java.util.HashMap<>();
 		if (!ids.isEmpty()) {
 			bookmarked.addAll(bookmarkRepository.findBookmarkedPostingIds(userId, ids));
+			for (PostingMedia media : mediaRepository.findByPostingIdInOrderByPostingIdAscPositionAsc(ids)) {
+				thumbnails.putIfAbsent(media.getPostingId(), media.getUrl());
+			}
 		}
 		return page.stream().map(c -> {
 			PostingRef p = c.posting();
@@ -228,7 +236,7 @@ public class PostingSearchService {
 					p.getActivityCategories(), p.getAnimalType(), p.getActivityStartAt(), p.getRecruitEndAt(),
 					p.getCapacity(), p.getApplicantCount(),
 					PostingLookup.remaining(p.getCapacity(), p.getApplicantCount()), p.isBeginnerFriendly(),
-					distance, bookmarked.contains(p.getPostingId()));
+					distance, bookmarked.contains(p.getPostingId()), thumbnails.get(p.getPostingId()));
 		}).toList();
 	}
 

@@ -20,5 +20,6 @@ public record ShelterDetailResponse(
 		Double distanceKm,
 		boolean bookmarked,
 		long openPostingCount,
-		List<ShelterOpenPostingItem> openPostings) {
+		List<ShelterOpenPostingItem> openPostings,
+		List<String> imageUrls) {
 }

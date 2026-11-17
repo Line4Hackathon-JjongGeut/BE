@@ -4,7 +4,9 @@ import com.jjonggeut.domain.activity.dto.PageResponse;
 import com.jjonggeut.domain.activity.dto.RegionResponse;
 import com.jjonggeut.domain.activity.repository.ShelterBookmarkRefRepository;
 import com.jjonggeut.domain.activity.service.PageParams;
+import com.jjonggeut.domain.posting.repository.PostingMediaRepository;
 import com.jjonggeut.domain.profile.entity.InterestAnimal;
+import com.jjonggeut.domain.recommendation.entity.PostingRef;
 import com.jjonggeut.domain.recommendation.entity.ShelterRef;
 import com.jjonggeut.domain.recommendation.repository.PostingRefRepository;
 import com.jjonggeut.domain.recommendation.repository.ShelterRefRepository;
@@ -13,8 +15,10 @@ import com.jjonggeut.domain.shelter.dto.ShelterDetailResponse;
 import com.jjonggeut.domain.shelter.dto.ShelterListItem;
 import com.jjonggeut.domain.shelter.dto.ShelterOpenPostingItem;
 import com.jjonggeut.domain.shelter.entity.VerificationStatus;
+import com.jjonggeut.domain.shelter.entity.ShelterMedia;
 import com.jjonggeut.domain.shelter.exception.ShelterErrorCode;
 import com.jjonggeut.domain.shelter.repository.ShelterAnimalStatRefRepository;
+import com.jjonggeut.domain.shelter.repository.ShelterMediaRepository;
 import com.jjonggeut.global.exception.BusinessException;
 import com.jjonggeut.global.exception.ErrorCode;
 import com.jjonggeut.global.util.GeoUtil;
@@ -49,14 +53,19 @@ public class ShelterQueryService {
 	private final PostingRefRepository postingRepository;
 	private final ShelterBookmarkRefRepository bookmarkRepository;
 	private final ShelterAnimalStatRefRepository animalStatRepository;
+	private final ShelterMediaRepository mediaRepository;
+	private final PostingMediaRepository postingMediaRepository;
 
 	public ShelterQueryService(ShelterRefRepository shelterRepository, PostingRefRepository postingRepository,
 			ShelterBookmarkRefRepository bookmarkRepository,
-			ShelterAnimalStatRefRepository animalStatRepository) {
+			ShelterAnimalStatRefRepository animalStatRepository, ShelterMediaRepository mediaRepository,
+			PostingMediaRepository postingMediaRepository) {
 		this.shelterRepository = shelterRepository;
 		this.postingRepository = postingRepository;
 		this.bookmarkRepository = bookmarkRepository;
 		this.animalStatRepository = animalStatRepository;
+		this.mediaRepository = mediaRepository;
+		this.postingMediaRepository = postingMediaRepository;
 	}
 
 	/** 조회 조건. 모두 선택이며 서로의 조합 규칙은 {@link #validate()} 가 확인한다. */
@@ -119,9 +128,11 @@ public class ShelterQueryService {
 		List<Long> ids = pageItems.stream().map(c -> c.shelter().getShelterId()).toList();
 		Map<Long, Long> openCounts = new HashMap<>();
 		Set<Long> bookmarked = new HashSet<>();
+		Map<Long, String> thumbnails = new HashMap<>();
 		if (!ids.isEmpty()) {
 			postingRepository.countOpenByShelterIds(ids).forEach(row -> openCounts.put((Long) row[0], (Long) row[1]));
 			bookmarked.addAll(bookmarkRepository.findBookmarkedShelterIds(userId, ids));
+			thumbnails.putAll(thumbnailsByShelterId(ids));
 		}
 
 		return PageResponse.of(new PageImpl<>(pageItems, pageable, candidates.size()), candidate -> {
@@ -131,8 +142,17 @@ public class ShelterQueryService {
 					shelter.getAddress(), shelter.getLatitude(), shelter.getLongitude(), shelter.getPhone(),
 					shelter.getAnimalTypes(), shelter.getVerificationStatus(), distance,
 					openCounts.getOrDefault(shelter.getShelterId(), 0L),
-					bookmarked.contains(shelter.getShelterId()));
+					bookmarked.contains(shelter.getShelterId()), thumbnails.get(shelter.getShelterId()));
 		});
+	}
+
+	/** 시설별 대표(첫 번째) 사진 URL. */
+	private Map<Long, String> thumbnailsByShelterId(List<Long> shelterIds) {
+		Map<Long, String> result = new HashMap<>();
+		for (ShelterMedia media : mediaRepository.findByShelterIdInOrderByShelterIdAscPositionAsc(shelterIds)) {
+			result.putIfAbsent(media.getShelterId(), media.getUrl());
+		}
+		return result;
 	}
 
 	/** 시설 한 곳의 상세. 좌표를 함께 보내면 거리를 계산하고, 연락처는 인증된 시설만 내려준다. */
@@ -152,17 +172,32 @@ public class ShelterQueryService {
 		boolean verified = shelter.getVerificationStatus() == VerificationStatus.VERIFIED;
 		long openCount = postingRepository.countOpenByShelterIds(List.of(shelterId)).stream()
 				.mapToLong(row -> (Long) row[1]).sum();
-		List<ShelterOpenPostingItem> postings = postingRepository
-				.findOpenByShelterId(shelterId, PageRequest.of(0, DETAIL_POSTING_LIMIT)).stream()
+		List<PostingRef> openPostings = postingRepository.findOpenByShelterId(shelterId,
+				PageRequest.of(0, DETAIL_POSTING_LIMIT));
+		Map<Long, String> postingThumbnails = openPostings.isEmpty() ? Map.of()
+				: postingMediaThumbnails(openPostings.stream().map(PostingRef::getPostingId).toList());
+		List<ShelterOpenPostingItem> postings = openPostings.stream()
 				.map(p -> new ShelterOpenPostingItem(p.getPostingId(), p.getPostingType(), p.getTitle(),
-						p.getActivityStartAt(), p.getCapacity(), p.getApplicantCount()))
+						p.getActivityStartAt(), p.getCapacity(), p.getApplicantCount(),
+						postingThumbnails.get(p.getPostingId())))
 				.toList();
 		boolean bookmarked = !bookmarkRepository.findBookmarkedShelterIds(userId, List.of(shelterId)).isEmpty();
+		List<String> imageUrls = mediaRepository.findByShelterIdInOrderByShelterIdAscPositionAsc(List.of(shelterId))
+				.stream().map(ShelterMedia::getUrl).toList();
 
 		return new ShelterDetailResponse(shelter.getShelterId(), shelter.getName(), region(shelter),
 				shelter.getAddress(), shelter.getLatitude(), shelter.getLongitude(),
 				verified ? shelter.getPhone() : null, shelter.getDescription(), shelter.getAnimalTypes(),
-				shelter.getVerificationStatus(), distance, bookmarked, openCount, postings);
+				shelter.getVerificationStatus(), distance, bookmarked, openCount, postings, imageUrls);
+	}
+
+	/** 공고별 대표(첫 번째) 사진 URL. */
+	private Map<Long, String> postingMediaThumbnails(List<Long> postingIds) {
+		Map<Long, String> result = new HashMap<>();
+		for (var media : postingMediaRepository.findByPostingIdInOrderByPostingIdAscPositionAsc(postingIds)) {
+			result.putIfAbsent(media.getPostingId(), media.getUrl());
+		}
+		return result;
 	}
 
 	/** 시설의 보호동물 현황. 등록된 현황이 없는 시설은 모두 0 으로 준다. */

@@ -3,6 +3,8 @@ package com.jjonggeut.domain.shelter.service;
 import com.jjonggeut.domain.activity.dto.PageResponse;
 import com.jjonggeut.domain.activity.repository.PostingBookmarkRefRepository;
 import com.jjonggeut.domain.activity.service.PageParams;
+import com.jjonggeut.domain.posting.entity.PostingMedia;
+import com.jjonggeut.domain.posting.repository.PostingMediaRepository;
 import com.jjonggeut.domain.recommendation.entity.PostingRef;
 import com.jjonggeut.domain.recommendation.repository.PostingRefRepository;
 import com.jjonggeut.domain.recommendation.repository.ShelterRefRepository;
@@ -10,8 +12,10 @@ import com.jjonggeut.domain.shelter.dto.ShelterPostingItem;
 import com.jjonggeut.domain.shelter.exception.ShelterErrorCode;
 import com.jjonggeut.global.exception.BusinessException;
 import com.jjonggeut.global.exception.ErrorCode;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -29,12 +33,15 @@ public class ShelterPostingQueryService {
 	private final ShelterRefRepository shelterRepository;
 	private final PostingRefRepository postingRepository;
 	private final PostingBookmarkRefRepository postingBookmarkRepository;
+	private final PostingMediaRepository postingMediaRepository;
 
 	public ShelterPostingQueryService(ShelterRefRepository shelterRepository,
-			PostingRefRepository postingRepository, PostingBookmarkRefRepository postingBookmarkRepository) {
+			PostingRefRepository postingRepository, PostingBookmarkRefRepository postingBookmarkRepository,
+			PostingMediaRepository postingMediaRepository) {
 		this.shelterRepository = shelterRepository;
 		this.postingRepository = postingRepository;
 		this.postingBookmarkRepository = postingBookmarkRepository;
+		this.postingMediaRepository = postingMediaRepository;
 	}
 
 	public PageResponse<ShelterPostingItem> list(Long userId, Long shelterId, String postingType, Integer page,
@@ -53,12 +60,17 @@ public class ShelterPostingQueryService {
 
 		List<Long> ids = postings.getContent().stream().map(PostingRef::getPostingId).toList();
 		Set<Long> bookmarked = new HashSet<>();
+		Map<Long, String> thumbnails = new HashMap<>();
 		if (!ids.isEmpty()) {
 			bookmarked.addAll(postingBookmarkRepository.findBookmarkedPostingIds(userId, ids));
+			for (PostingMedia media : postingMediaRepository.findByPostingIdInOrderByPostingIdAscPositionAsc(ids)) {
+				thumbnails.putIfAbsent(media.getPostingId(), media.getUrl());
+			}
 		}
 		return PageResponse.of(postings, p -> new ShelterPostingItem(p.getPostingId(), p.getPostingType(),
 				p.getTitle(), p.getActivityCategories(), p.getAnimalType(), p.getActivityStartAt(),
-				p.getCapacity(), p.getApplicantCount(), remaining(p), bookmarked.contains(p.getPostingId())));
+				p.getCapacity(), p.getApplicantCount(), remaining(p), bookmarked.contains(p.getPostingId()),
+				thumbnails.get(p.getPostingId())));
 	}
 
 	private Integer remaining(PostingRef posting) {
