@@ -236,7 +236,8 @@ public class PostingSearchService {
 					p.getActivityCategories(), p.getAnimalType(), p.getActivityStartAt(), p.getRecruitEndAt(),
 					p.getCapacity(), p.getApplicantCount(),
 					PostingLookup.remaining(p.getCapacity(), p.getApplicantCount()), p.isBeginnerFriendly(),
-					distance, bookmarked.contains(p.getPostingId()), thumbnails.get(p.getPostingId()));
+					distance, bookmarked.contains(p.getPostingId()), thumbnails.get(p.getPostingId()),
+					PostingLookup.donationProgressRate(p.getDonationTargetQuantity(), p.getDonationReceivedQuantity()));
 		}).toList();
 	}
 

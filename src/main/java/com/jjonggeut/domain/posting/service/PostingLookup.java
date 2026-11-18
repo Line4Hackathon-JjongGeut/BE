@@ -33,4 +33,13 @@ public class PostingLookup {
 		}
 		return Math.max(0, capacity - (applicants == null ? 0 : applicants));
 	}
+
+	/** 후원 물품 진행률(%). 목표 수량이 없거나 0이면 null, 100을 넘어도 100으로 본다. */
+	public static Integer donationProgressRate(Integer target, Integer received) {
+		if (target == null || target <= 0) {
+			return null;
+		}
+		int actual = received == null ? 0 : received;
+		return Math.min(100, Math.round(actual * 100f / target));
+	}
 }

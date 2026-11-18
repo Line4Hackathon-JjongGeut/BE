@@ -106,6 +106,12 @@ public class PostingRef {
 	@Column(name = "donation_purpose", length = 255)
 	private String donationPurpose;
 
+	@Column(name = "donation_target_quantity")
+	private Integer donationTargetQuantity;
+
+	@Column(name = "donation_received_quantity")
+	private Integer donationReceivedQuantity;
+
 	@Enumerated(EnumType.STRING)
 	@Column(name = "contact_method", length = 20)
 	private FosterContactMethod contactMethod;
@@ -172,6 +178,12 @@ public class PostingRef {
 	public PostingRef withSponsor(String donationUrl, String donationPurpose) {
 		this.donationUrl = donationUrl;
 		this.donationPurpose = donationPurpose;
+		return this;
+	}
+
+	public PostingRef withDonationQuantity(Integer targetQuantity, Integer receivedQuantity) {
+		this.donationTargetQuantity = targetQuantity;
+		this.donationReceivedQuantity = receivedQuantity;
 		return this;
 	}
 
