@@ -50,7 +50,8 @@ class PostingDetailTest extends PostingTestBase {
 				.withUrgent(true, 80).withPeriod(LocalDateTime.of(2026, 12, 8, 18, 0), LocalDateTime.of(2026, 12, 10, 12, 0))
 				.withConditions(false, 18, "산책 경험자");
 		posting(202, 2, "SPONSOR", "OPEN", "겨울 담요 후원", List.of(ActivityCategory.ETC), "ALL", null, null, null)
-				.withSponsor("https://example.org/donate", "담요 구입");
+				.withSponsor("https://example.org/donate", "담요 구입")
+				.withDonationQuantity(30, 9);
 		posting(203, 2, "SPONSOR", "OPEN", "링크 없는 후원", List.of(ActivityCategory.ETC), "ALL", null, null, null);
 		posting(204, 1, "FOSTER", "OPEN", "임시보호자 모집", List.of(ActivityCategory.FEEDING_CARE), "CAT", null, 3, 0)
 				.withFoster(FosterContactMethod.APP, null);
@@ -107,9 +108,13 @@ class PostingDetailTest extends PostingTestBase {
 				.andExpect(jsonPath("$.data.foster").isEmpty())
 				.andExpect(jsonPath("$.data.sponsor.donationPurpose").value("담요 구입"))
 				.andExpect(jsonPath("$.data.sponsor.donationLinkAvailable").value(true))
-				.andExpect(jsonPath("$.data.sponsor.donationUrl").doesNotExist());
+				.andExpect(jsonPath("$.data.sponsor.donationUrl").doesNotExist())
+				.andExpect(jsonPath("$.data.sponsor.targetQuantity").value(30))
+				.andExpect(jsonPath("$.data.sponsor.receivedQuantity").value(9))
+				.andExpect(jsonPath("$.data.sponsor.progressRate").value(30));
 		get("/api/v1/postings/203").andExpect(status().isOk())
-				.andExpect(jsonPath("$.data.sponsor.donationLinkAvailable").value(false));
+				.andExpect(jsonPath("$.data.sponsor.donationLinkAvailable").value(false))
+				.andExpect(jsonPath("$.data.sponsor.progressRate").isEmpty());
 	}
 
 	@Test

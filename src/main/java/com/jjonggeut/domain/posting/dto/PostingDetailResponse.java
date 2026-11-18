@@ -51,7 +51,9 @@ public record PostingDetailResponse(
 	public record Conditions(Integer minAge, boolean beginnerFriendly, String requirements) {
 	}
 
-	public record SponsorInfo(String donationPurpose, boolean donationLinkAvailable) {
+	/** targetQuantity 가 없으면(수량 집계 안 하는 공고) progressRate 도 null 이다. */
+	public record SponsorInfo(String donationPurpose, boolean donationLinkAvailable, Integer targetQuantity,
+			Integer receivedQuantity, Integer progressRate) {
 	}
 
 	public record FosterInfo(FosterContactMethod contactMethod, String externalUrl) {

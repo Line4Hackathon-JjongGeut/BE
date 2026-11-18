@@ -22,5 +22,6 @@ public record PostingSummaryItem(
 		boolean beginnerFriendly,
 		Double distanceKm,
 		boolean bookmarked,
-		String thumbnailUrl) {
+		String thumbnailUrl,
+		Integer donationProgressRate) {
 }

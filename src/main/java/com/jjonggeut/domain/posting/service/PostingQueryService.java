@@ -79,7 +79,10 @@ public class PostingQueryService {
 					new PostingDetailResponse.Conditions(posting.getMinAge(), posting.isBeginnerFriendly(),
 							posting.getRequirements()));
 		} else if (PostingType.SPONSOR.name().equals(type)) {
-			sponsor = new PostingDetailResponse.SponsorInfo(posting.getDonationPurpose(), hasDonationLink(posting));
+			sponsor = new PostingDetailResponse.SponsorInfo(posting.getDonationPurpose(), hasDonationLink(posting),
+					posting.getDonationTargetQuantity(), posting.getDonationReceivedQuantity(),
+					PostingLookup.donationProgressRate(posting.getDonationTargetQuantity(),
+							posting.getDonationReceivedQuantity()));
 		} else if (PostingType.FOSTER.name().equals(type)) {
 			foster = new PostingDetailResponse.FosterInfo(fosterMethod(posting), posting.getExternalUrl());
 		}
