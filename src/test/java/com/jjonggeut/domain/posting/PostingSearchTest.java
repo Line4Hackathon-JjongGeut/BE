@@ -105,6 +105,8 @@ class PostingSearchTest extends PostingTestBase {
 				.andExpect(jsonPath("$.data.items[0].shelter.name").value("성북 행복보호소"))
 				.andExpect(jsonPath("$.data.items[0].shelter.region.sido").value("서울특별시"))
 				.andExpect(jsonPath("$.data.items[0].shelter.region.sigungu").value("성북구"))
+				.andExpect(jsonPath("$.data.items[0].shelter.latitude").value(37.5894))
+				.andExpect(jsonPath("$.data.items[0].shelter.longitude").value(127.0167))
 				.andExpect(jsonPath("$.data.items[0].activityCategories[0]").value("WALK"))
 				.andExpect(jsonPath("$.data.items[0].animalType").value("DOG"))
 				.andExpect(jsonPath("$.data.items[0].activityStartAt").value("2026-12-10T10:00:00"))

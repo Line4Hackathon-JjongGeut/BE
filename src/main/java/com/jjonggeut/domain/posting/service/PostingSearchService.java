@@ -239,7 +239,9 @@ public class PostingSearchService {
 					: new RegionResponse(s.getRegionSido(), s.getRegionSigungu());
 			Double distance = c.distance() == null ? null : Math.round(c.distance() * 10) / 10.0;
 			return new PostingSummaryItem(p.getPostingId(), p.getPostingType(), p.getTitle(), p.getStatus(),
-					p.isUrgent(), new PostingShelterSummary(s.getShelterId(), s.getName(), region),
+					p.isUrgent(),
+					new PostingShelterSummary(s.getShelterId(), s.getName(), region, s.getLatitude(),
+							s.getLongitude()),
 					p.getActivityCategories(), p.getAnimalType(), p.getActivityStartAt(), p.getRecruitEndAt(),
 					p.getCapacity(), p.getApplicantCount(),
 					PostingLookup.remaining(p.getCapacity(), p.getApplicantCount()), p.isBeginnerFriendly(),
