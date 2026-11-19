@@ -51,9 +51,9 @@ public record PostingDetailResponse(
 	public record Conditions(Integer minAge, boolean beginnerFriendly, String requirements) {
 	}
 
-	/** targetQuantity 가 없으면(수량 집계 안 하는 공고) progressRate 도 null 이다. */
+	/** targetQuantity 가 없으면(수량 집계 안 하는 공고) progressRate 도 null 이다. 필요 물품이 없으면 neededItems 는 빈 목록이다. */
 	public record SponsorInfo(String donationPurpose, boolean donationLinkAvailable, Integer targetQuantity,
-			Integer receivedQuantity, Integer progressRate) {
+			Integer receivedQuantity, Integer progressRate, List<String> neededItems) {
 	}
 
 	public record FosterInfo(FosterContactMethod contactMethod, String externalUrl, String petName,

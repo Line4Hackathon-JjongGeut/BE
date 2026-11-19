@@ -82,7 +82,8 @@ public class PostingQueryService {
 			sponsor = new PostingDetailResponse.SponsorInfo(posting.getDonationPurpose(), hasDonationLink(posting),
 					posting.getDonationTargetQuantity(), posting.getDonationReceivedQuantity(),
 					PostingLookup.donationProgressRate(posting.getDonationTargetQuantity(),
-							posting.getDonationReceivedQuantity()));
+							posting.getDonationReceivedQuantity()),
+					posting.getPreparations());
 		} else if (PostingType.FOSTER.name().equals(type)) {
 			foster = new PostingDetailResponse.FosterInfo(fosterMethod(posting), posting.getExternalUrl(),
 					posting.getPetName(), posting.getPetAgeText(),
