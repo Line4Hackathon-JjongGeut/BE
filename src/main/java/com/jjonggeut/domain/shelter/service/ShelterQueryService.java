@@ -187,8 +187,9 @@ public class ShelterQueryService {
 
 		return new ShelterDetailResponse(shelter.getShelterId(), shelter.getName(), region(shelter),
 				shelter.getAddress(), shelter.getLatitude(), shelter.getLongitude(),
-				verified ? shelter.getPhone() : null, shelter.getDescription(), shelter.getAnimalTypes(),
-				shelter.getVerificationStatus(), distance, bookmarked, openCount, postings, imageUrls);
+				verified ? shelter.getPhone() : null, shelter.getOperatingHours(), shelter.getVisitPolicy(),
+				shelter.getDescription(), shelter.getAnimalTypes(), shelter.getVerificationStatus(), distance,
+				bookmarked, openCount, postings, imageUrls);
 	}
 
 	/** 공고별 대표(첫 번째) 사진 URL. */
