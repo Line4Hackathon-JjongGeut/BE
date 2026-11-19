@@ -130,6 +130,9 @@ public class PostingSearchService {
 			if (shelter == null) {
 				continue;
 			}
+			if (!matchesKeyword(c.keyword(), posting, shelter)) {
+				continue;
+			}
 			if (!c.activityCategories().isEmpty()
 					&& posting.getActivityCategories().stream().noneMatch(c.activityCategories()::contains)) {
 				continue;
@@ -164,10 +167,6 @@ public class PostingSearchService {
 				predicates.add(builder.or(builder.equal(root.get("animalType"), c.animalType().name()),
 						builder.equal(root.get("animalType"), "ALL")));
 			}
-			if (c.keyword() != null) {
-				predicates.add(builder.like(builder.lower(root.get("title")), "%" + escapeLike(c.keyword()) + "%",
-						LIKE_ESCAPE));
-			}
 			if (c.startDate() != null) {
 				predicates.add(builder.greaterThanOrEqualTo(root.<LocalDateTime>get("activityStartAt"),
 						c.startDate().atStartOfDay()));
@@ -187,11 +186,19 @@ public class PostingSearchService {
 		};
 	}
 
-	/** MySQL 에서 백슬래시는 문자열 이스케이프라 헷갈리지 않도록 느낌표를 LIKE 이스케이프 문자로 쓴다. */
-	private static final char LIKE_ESCAPE = '!';
+	/** 검색어가 공고 제목이나 시설 이름·지역·주소 중 하나라도 포함되면 맞는 것으로 본다. */
+	private static boolean matchesKeyword(String keyword, PostingRef posting, ShelterRef shelter) {
+		if (keyword == null) {
+			return true;
+		}
+		return containsIgnoreCase(posting.getTitle(), keyword) || containsIgnoreCase(shelter.getName(), keyword)
+				|| containsIgnoreCase(shelter.getRegionSido(), keyword)
+				|| containsIgnoreCase(shelter.getRegionSigungu(), keyword)
+				|| containsIgnoreCase(shelter.getAddress(), keyword);
+	}
 
-	private static String escapeLike(String keyword) {
-		return keyword.replace("!", "!!").replace("%", "!%").replace("_", "!_");
+	private static boolean containsIgnoreCase(String value, String keyword) {
+		return value != null && value.toLowerCase().contains(keyword);
 	}
 
 	private Comparator<Candidate> comparator(Sort sort) {

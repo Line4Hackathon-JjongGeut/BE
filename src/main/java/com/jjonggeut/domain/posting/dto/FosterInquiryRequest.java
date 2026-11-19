@@ -9,6 +9,6 @@ public record FosterInquiryRequest(
 		@Size(max = 500, message = "전할 말은 500자 이하로 입력해주세요.")
 		String message,
 
-		@Pattern(regexp = "^[0-9-]{9,13}$", message = "연락처는 숫자와 하이픈으로 9~13자 입력해주세요.")
+		@Pattern(regexp = "^[0-9-]{9,13}$", message = "연락처 정보를 확인해주세요!")
 		String contactPhone) {
 }
