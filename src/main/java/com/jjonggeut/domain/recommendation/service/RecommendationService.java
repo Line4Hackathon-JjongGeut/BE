@@ -2,6 +2,8 @@ package com.jjonggeut.domain.recommendation.service;
 
 import com.jjonggeut.domain.consent.entity.ConsentType;
 import com.jjonggeut.domain.consent.service.ConsentService;
+import com.jjonggeut.domain.posting.entity.PostingMedia;
+import com.jjonggeut.domain.posting.repository.PostingMediaRepository;
 import com.jjonggeut.domain.profile.entity.UserProfile;
 import com.jjonggeut.domain.profile.repository.UserProfileRepository;
 import com.jjonggeut.domain.recommendation.dto.RecommendationResponse;
@@ -54,13 +56,15 @@ public class RecommendationService {
 	private final ConsentService consentService;
 	private final RuleScorer ruleScorer;
 	private final RecommendationReasonGenerator reasonGenerator;
+	private final PostingMediaRepository mediaRepository;
 	private final TransactionTemplate transactionTemplate;
 
 	public RecommendationService(UserProfileRepository profileRepository,
 			VolunteerExperienceRepository experienceRepository, PostingRefRepository postingRepository,
 			ShelterRefRepository shelterRepository, RecommendationBatchRepository batchRepository,
 			RecommendationItemRepository itemRepository, ConsentService consentService, RuleScorer ruleScorer,
-			RecommendationReasonGenerator reasonGenerator, PlatformTransactionManager transactionManager) {
+			RecommendationReasonGenerator reasonGenerator, PostingMediaRepository mediaRepository,
+			PlatformTransactionManager transactionManager) {
 		this.profileRepository = profileRepository;
 		this.experienceRepository = experienceRepository;
 		this.postingRepository = postingRepository;
@@ -70,6 +74,7 @@ public class RecommendationService {
 		this.consentService = consentService;
 		this.ruleScorer = ruleScorer;
 		this.reasonGenerator = reasonGenerator;
+		this.mediaRepository = mediaRepository;
 		this.transactionTemplate = new TransactionTemplate(transactionManager);
 	}
 
@@ -163,6 +168,9 @@ public class RecommendationService {
 		}
 		List<RecommendationItem> saved = itemRepository.saveAll(items);
 
+		Map<Long, String> thumbnails = thumbnailsByPostingId(
+				ranked.stream().map(c -> c.posting().getPostingId()).toList());
+
 		List<RecommendationResponse.Item> responseItems = new ArrayList<>();
 		for (int i = 0; i < saved.size(); i++) {
 			RecommendationCandidate c = ranked.get(i);
@@ -179,12 +187,24 @@ public class RecommendationService {
 									: new RecommendationResponse.Region(shelter.getRegionSido(),
 											shelter.getRegionSigungu()),
 							c.distanceKm(),
-							c.posting().getActivityCategories()),
+							c.posting().getActivityCategories(),
+							c.posting().getActivityStartAt(),
+							c.posting().getActivityEndAt(),
+							thumbnails.get(c.posting().getPostingId())),
 					item.getReason(),
 					item.getReasonTags()));
 		}
 		return new RecommendationResponse(batch.getRecommendationBatchId(), source, batch.getCreatedAt(),
 				responseItems);
+	}
+
+	/** 공고별 대표(첫 번째) 사진 URL. */
+	private Map<Long, String> thumbnailsByPostingId(List<Long> postingIds) {
+		Map<Long, String> result = new java.util.HashMap<>();
+		for (PostingMedia media : mediaRepository.findByPostingIdInOrderByPostingIdAscPositionAsc(postingIds)) {
+			result.putIfAbsent(media.getPostingId(), media.getUrl());
+		}
+		return result;
 	}
 
 	private record Prepared(List<RecommendationCandidate> ranked, boolean aiAllowed) {
