@@ -14,7 +14,6 @@ import com.jjonggeut.domain.posting.repository.PostingScheduleRepository;
 import com.jjonggeut.domain.recommendation.entity.PostingRef;
 import com.jjonggeut.domain.recommendation.entity.ShelterRef;
 import com.jjonggeut.domain.recommendation.repository.ShelterRefRepository;
-import com.jjonggeut.domain.shelter.entity.VerificationStatus;
 import com.jjonggeut.global.exception.BusinessException;
 import com.jjonggeut.global.exception.ErrorCode;
 import com.jjonggeut.global.util.GeoUtil;
@@ -60,12 +59,11 @@ public class PostingQueryService {
 			distance = Math.round(GeoUtil.haversineKm(latitude, longitude, shelter.getLatitude(),
 					shelter.getLongitude()) * 10) / 10.0;
 		}
-		boolean verified = shelter.getVerificationStatus() == VerificationStatus.VERIFIED;
 		RegionResponse region = shelter.getRegionSido() == null && shelter.getRegionSigungu() == null ? null
 				: new RegionResponse(shelter.getRegionSido(), shelter.getRegionSigungu());
 		PostingDetailResponse.ShelterInfo shelterInfo = new PostingDetailResponse.ShelterInfo(
 				shelter.getShelterId(), shelter.getName(), region, shelter.getAddress(), shelter.getLatitude(),
-				shelter.getLongitude(), verified ? shelter.getPhone() : null, shelter.getVerificationStatus());
+				shelter.getLongitude(), shelter.getPhone(), shelter.getVerificationStatus());
 
 		String type = posting.getPostingType();
 		PostingDetailResponse.VolunteerInfo volunteer = null;

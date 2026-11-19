@@ -214,12 +214,12 @@ class ApplicationQueryTest extends ApplicationTestBase {
 	}
 
 	@Test
-	void 미인증_시설의_연락처는_가리고_준비물이_없으면_빈_목록이다() throws Exception {
+	void 미인증_시설도_연락처가_있으면_보여_주고_준비물이_없으면_빈_목록이다() throws Exception {
 		Long id = application(user, 504, null, ApplicationStatus.PENDING);
 
 		detail(id).andExpect(status().isOk())
 				.andExpect(jsonPath("$.data.shelter.shelterId").value(2))
-				.andExpect(jsonPath("$.data.shelter.phone").isEmpty())
+				.andExpect(jsonPath("$.data.shelter.phone").value("02-000-0002"))
 				.andExpect(jsonPath("$.data.preparations").isEmpty())
 				.andExpect(jsonPath("$.data.answers").isEmpty())
 				.andExpect(jsonPath("$.data.message").isEmpty());

@@ -141,10 +141,10 @@ class PostingDetailTest extends PostingTestBase {
 	}
 
 	@Test
-	void 미인증_시설의_연락처는_가린다() throws Exception {
+	void 미인증_시설도_연락처가_있으면_보여_준다() throws Exception {
 		get("/api/v1/postings/202").andExpect(status().isOk())
 				.andExpect(jsonPath("$.data.shelter.verificationStatus").value("UNVERIFIED"))
-				.andExpect(jsonPath("$.data.shelter.phone").isEmpty());
+				.andExpect(jsonPath("$.data.shelter.phone").value("02-000-0002"));
 	}
 
 	@Test

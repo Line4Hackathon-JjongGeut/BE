@@ -169,7 +169,6 @@ public class ShelterQueryService {
 			distance = Math.round(GeoUtil.haversineKm(latitude, longitude, shelter.getLatitude(),
 					shelter.getLongitude()) * 10) / 10.0;
 		}
-		boolean verified = shelter.getVerificationStatus() == VerificationStatus.VERIFIED;
 		long openCount = postingRepository.countOpenByShelterIds(List.of(shelterId)).stream()
 				.mapToLong(row -> (Long) row[1]).sum();
 		List<PostingRef> openPostings = postingRepository.findOpenByShelterId(shelterId,
@@ -187,7 +186,7 @@ public class ShelterQueryService {
 
 		return new ShelterDetailResponse(shelter.getShelterId(), shelter.getName(), region(shelter),
 				shelter.getAddress(), shelter.getLatitude(), shelter.getLongitude(),
-				verified ? shelter.getPhone() : null, shelter.getOperatingHours(), shelter.getVisitPolicy(),
+				shelter.getPhone(), shelter.getOperatingHours(), shelter.getVisitPolicy(),
 				shelter.getDescription(), shelter.getAnimalTypes(), shelter.getVerificationStatus(), distance,
 				bookmarked, openCount, postings, imageUrls);
 	}
