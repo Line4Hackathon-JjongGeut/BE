@@ -84,7 +84,10 @@ public class PostingQueryService {
 					PostingLookup.donationProgressRate(posting.getDonationTargetQuantity(),
 							posting.getDonationReceivedQuantity()));
 		} else if (PostingType.FOSTER.name().equals(type)) {
-			foster = new PostingDetailResponse.FosterInfo(fosterMethod(posting), posting.getExternalUrl());
+			foster = new PostingDetailResponse.FosterInfo(fosterMethod(posting), posting.getExternalUrl(),
+					posting.getPetName(), posting.getPetAgeText(),
+					posting.getPetGender() == null ? null : posting.getPetGender().name(),
+					posting.getPetCharacteristics());
 		}
 
 		boolean bookmarked = !bookmarkRepository.findBookmarkedPostingIds(userId, List.of(postingId)).isEmpty();
