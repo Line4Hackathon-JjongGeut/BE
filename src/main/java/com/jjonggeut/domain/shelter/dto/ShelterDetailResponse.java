@@ -14,6 +14,8 @@ public record ShelterDetailResponse(
 		Double latitude,
 		Double longitude,
 		String phone,
+		String operatingHours,
+		String visitPolicy,
 		String description,
 		List<InterestAnimal> animalTypes,
 		VerificationStatus verificationStatus,

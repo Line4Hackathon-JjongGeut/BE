@@ -79,7 +79,8 @@ class ShelterDetailTest {
 		// 1: 인증 시설(성북), 2: 미인증 시설(노원)
 		shelterRepository.save(ShelterRef.of(1L, "성북 행복보호소", "서울특별시", "성북구", "서울특별시 성북구 1번지",
 				37.5894, 127.0167, "02-111-2222", "유기견·유기묘를 돌봅니다.",
-				List.of(InterestAnimal.DOG, InterestAnimal.CAT), VerificationStatus.VERIFIED));
+				List.of(InterestAnimal.DOG, InterestAnimal.CAT), VerificationStatus.VERIFIED)
+				.withOperatingInfo("평일, 주말 10:00~18:00 (월 휴무)", "봉사 신청 후 방문 가능"));
 		shelterRepository.save(ShelterRef.of(2L, "노원 온기쉼터", "서울특별시", "노원구", "서울특별시 노원구 2번지",
 				37.6542, 127.0568, "02-333-4444", "고양이 쉼터",
 				List.of(InterestAnimal.CAT), VerificationStatus.UNVERIFIED));
@@ -107,6 +108,8 @@ class ShelterDetailTest {
 				.andExpect(jsonPath("$.data.latitude").value(37.5894))
 				.andExpect(jsonPath("$.data.longitude").value(127.0167))
 				.andExpect(jsonPath("$.data.phone").value("02-111-2222"))
+				.andExpect(jsonPath("$.data.operatingHours").value("평일, 주말 10:00~18:00 (월 휴무)"))
+				.andExpect(jsonPath("$.data.visitPolicy").value("봉사 신청 후 방문 가능"))
 				.andExpect(jsonPath("$.data.description").value("유기견·유기묘를 돌봅니다."))
 				.andExpect(jsonPath("$.data.animalTypes[0]").value("DOG"))
 				.andExpect(jsonPath("$.data.animalTypes[1]").value("CAT"))
@@ -132,6 +135,8 @@ class ShelterDetailTest {
 		detail(3, "").andExpect(status().isOk())
 				.andExpect(jsonPath("$.data.region").isEmpty())
 				.andExpect(jsonPath("$.data.phone").isEmpty())
+				.andExpect(jsonPath("$.data.operatingHours").isEmpty())
+				.andExpect(jsonPath("$.data.visitPolicy").isEmpty())
 				.andExpect(jsonPath("$.data.animalTypes.length()").value(0))
 				.andExpect(jsonPath("$.data.verificationStatus").value("UNVERIFIED"));
 	}

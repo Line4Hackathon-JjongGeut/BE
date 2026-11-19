@@ -66,6 +66,12 @@ public class ShelterRef {
 	@Column(name = "longitude")
 	private Double longitude;
 
+	@Column(name = "operating_hours", length = 100)
+	private String operatingHours;
+
+	@Column(name = "visit_policy", length = 100)
+	private String visitPolicy;
+
 	public static ShelterRef of(Long shelterId, String name, String regionSido, String regionSigungu,
 			Double latitude, Double longitude) {
 		ShelterRef shelter = new ShelterRef();
@@ -88,6 +94,12 @@ public class ShelterRef {
 		shelter.animalTypes = animalTypes;
 		shelter.verificationStatus = verificationStatus;
 		return shelter;
+	}
+
+	public ShelterRef withOperatingInfo(String operatingHours, String visitPolicy) {
+		this.operatingHours = operatingHours;
+		this.visitPolicy = visitPolicy;
+		return this;
 	}
 
 	public List<InterestAnimal> getAnimalTypes() {
