@@ -28,7 +28,10 @@ public record RecommendationResponse(
 			String shelterName,
 			Region region,
 			Double distanceKm,
-			List<ActivityCategory> activityCategories
+			List<ActivityCategory> activityCategories,
+			LocalDateTime activityStartAt,
+			LocalDateTime activityEndAt,
+			String thumbnailUrl
 	) {
 	}
 
