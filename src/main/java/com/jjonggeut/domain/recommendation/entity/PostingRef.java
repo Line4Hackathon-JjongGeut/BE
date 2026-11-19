@@ -1,6 +1,7 @@
 package com.jjonggeut.domain.recommendation.entity;
 
 import com.jjonggeut.domain.posting.entity.FosterContactMethod;
+import com.jjonggeut.domain.posting.entity.PetGender;
 import com.jjonggeut.domain.posting.entity.StringListConverter;
 import com.jjonggeut.domain.volunteerexperience.entity.ActivityCategory;
 import com.jjonggeut.domain.volunteerexperience.entity.ActivityCategoryListConverter;
@@ -119,6 +120,19 @@ public class PostingRef {
 	@Column(name = "external_url", length = 500)
 	private String externalUrl;
 
+	@Column(name = "pet_name", length = 50)
+	private String petName;
+
+	@Column(name = "pet_age_text", length = 50)
+	private String petAgeText;
+
+	@Enumerated(EnumType.STRING)
+	@Column(name = "pet_gender", length = 10)
+	private PetGender petGender;
+
+	@Column(name = "pet_characteristics", length = 500)
+	private String petCharacteristics;
+
 	@Column(name = "created_at")
 	private LocalDateTime createdAt;
 
@@ -190,6 +204,15 @@ public class PostingRef {
 	public PostingRef withFoster(FosterContactMethod contactMethod, String externalUrl) {
 		this.contactMethod = contactMethod;
 		this.externalUrl = externalUrl;
+		return this;
+	}
+
+	public PostingRef withPetInfo(String petName, String petAgeText, PetGender petGender,
+			String petCharacteristics) {
+		this.petName = petName;
+		this.petAgeText = petAgeText;
+		this.petGender = petGender;
+		this.petCharacteristics = petCharacteristics;
 		return this;
 	}
 

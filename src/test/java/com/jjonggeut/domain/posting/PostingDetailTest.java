@@ -7,6 +7,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.jjonggeut.domain.activity.entity.PostingBookmarkRef;
 import com.jjonggeut.domain.activity.repository.PostingBookmarkRefRepository;
 import com.jjonggeut.domain.posting.entity.FosterContactMethod;
+import com.jjonggeut.domain.posting.entity.PetGender;
 import com.jjonggeut.domain.posting.entity.PostingApplicationQuestion;
 import com.jjonggeut.domain.posting.entity.PostingSchedule;
 import com.jjonggeut.domain.posting.entity.QuestionType;
@@ -54,7 +55,8 @@ class PostingDetailTest extends PostingTestBase {
 				.withDonationQuantity(30, 9);
 		posting(203, 2, "SPONSOR", "OPEN", "링크 없는 후원", List.of(ActivityCategory.ETC), "ALL", null, null, null);
 		posting(204, 1, "FOSTER", "OPEN", "임시보호자 모집", List.of(ActivityCategory.FEEDING_CARE), "CAT", null, 3, 0)
-				.withFoster(FosterContactMethod.APP, null);
+				.withFoster(FosterContactMethod.APP, null)
+				.withPetInfo("나비", "약 6개월", PetGender.FEMALE, "사람을 잘 따름");
 		posting(205, 1, "FOSTER", "OPEN", "외부 문의 임시보호", List.of(ActivityCategory.FEEDING_CARE), "CAT", null, 3, 0)
 				.withFoster(FosterContactMethod.EXTERNAL, "https://example.org/foster");
 		posting(206, 1, "VOLUNTEER", "OPEN", "비공개 공고", List.of(ActivityCategory.WALK), "DOG", null, 5, 0)
@@ -122,11 +124,16 @@ class PostingDetailTest extends PostingTestBase {
 		get("/api/v1/postings/204").andExpect(status().isOk())
 				.andExpect(jsonPath("$.data.foster.contactMethod").value("APP"))
 				.andExpect(jsonPath("$.data.foster.externalUrl").isEmpty())
+				.andExpect(jsonPath("$.data.foster.petName").value("나비"))
+				.andExpect(jsonPath("$.data.foster.petAgeText").value("약 6개월"))
+				.andExpect(jsonPath("$.data.foster.petGender").value("FEMALE"))
+				.andExpect(jsonPath("$.data.foster.petCharacteristics").value("사람을 잘 따름"))
 				.andExpect(jsonPath("$.data.volunteer").isEmpty())
 				.andExpect(jsonPath("$.data.sponsor").isEmpty());
 		get("/api/v1/postings/205").andExpect(status().isOk())
 				.andExpect(jsonPath("$.data.foster.contactMethod").value("EXTERNAL"))
-				.andExpect(jsonPath("$.data.foster.externalUrl").value("https://example.org/foster"));
+				.andExpect(jsonPath("$.data.foster.externalUrl").value("https://example.org/foster"))
+				.andExpect(jsonPath("$.data.foster.petName").isEmpty());
 	}
 
 	@Test

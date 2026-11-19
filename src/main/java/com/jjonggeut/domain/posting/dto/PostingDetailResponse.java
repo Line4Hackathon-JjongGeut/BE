@@ -56,6 +56,7 @@ public record PostingDetailResponse(
 			Integer receivedQuantity, Integer progressRate) {
 	}
 
-	public record FosterInfo(FosterContactMethod contactMethod, String externalUrl) {
+	public record FosterInfo(FosterContactMethod contactMethod, String externalUrl, String petName,
+			String petAgeText, String petGender, String petCharacteristics) {
 	}
 }
