@@ -155,6 +155,13 @@ class PostingSearchTest extends PostingTestBase {
 	}
 
 	@Test
+	void 검색어가_시설_이름이나_지역에_있어도_찾는다() throws Exception {
+		assertThat(search("keyword=부산")).containsExactly(106L);
+		assertThat(search("keyword=해운대구")).containsExactly(106L);
+		assertThat(search("keyword=행복보호소")).containsExactly(102L, 101L);
+	}
+
+	@Test
 	void 검색어의_와일드카드_문자는_글자로_본다() throws Exception {
 		posting(110, 1, "VOLUNTEER", "OPEN", "100% 봉사", List.of(ActivityCategory.ETC), "ALL", null, null, null);
 		posting(111, 1, "VOLUNTEER", "OPEN", "100 봉사", List.of(ActivityCategory.ETC), "ALL", null, null, null);
