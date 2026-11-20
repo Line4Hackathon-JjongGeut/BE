@@ -131,6 +131,7 @@ class UserAccountTest {
 				.andExpect(jsonPath("$.data.nickname").value("쫑긋이"))
 				.andExpect(jsonPath("$.data.email").isEmpty())
 				.andExpect(jsonPath("$.data.phone").isEmpty())
+				.andExpect(jsonPath("$.data.profileImageUrl").isEmpty())
 				.andExpect(jsonPath("$.data.role").value("USER"))
 				.andExpect(jsonPath("$.data.status").value("ACTIVE"))
 				.andExpect(jsonPath("$.data.createdAt").isNotEmpty())
@@ -191,6 +192,23 @@ class UserAccountTest {
 
 		assertThat(reloadUser().getPhone()).isNull();
 		assertThat(reloadUser().getEmail()).isNull();
+	}
+
+	@Test
+	void 프로필_사진_URL을_수정하고_빈_문자열로_지운다() throws Exception {
+		update("""
+				{"profileImageUrl":"https://example.org/me.jpg"}
+				""")
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.data.profileImageUrl").value("https://example.org/me.jpg"));
+		assertThat(reloadUser().getProfileImageUrl()).isEqualTo("https://example.org/me.jpg");
+
+		update("""
+				{"profileImageUrl":""}
+				""")
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.data.profileImageUrl").isEmpty());
+		assertThat(reloadUser().getProfileImageUrl()).isNull();
 	}
 
 	@Test
@@ -260,7 +278,7 @@ class UserAccountTest {
 	@Test
 	void 탈퇴하면_계정이_탈퇴_상태가_되고_개인정보가_지워진다() throws Exception {
 		update("""
-				{"phone":"010-1234-5678","email":"jjong@example.com"}
+				{"phone":"010-1234-5678","email":"jjong@example.com","profileImageUrl":"https://example.org/me.jpg"}
 				""").andExpect(status().isOk());
 
 		withdraw().andExpect(status().isOk()).andExpect(jsonPath("$.isSuccess").value(true));
@@ -273,6 +291,7 @@ class UserAccountTest {
 		assertThat(saved.getNickname()).isNull();
 		assertThat(saved.getPhone()).isNull();
 		assertThat(saved.getEmail()).isNull();
+		assertThat(saved.getProfileImageUrl()).isNull();
 		assertThat(passwordEncoder.matches("password1", saved.getPasswordHash())).isFalse();
 	}
 
