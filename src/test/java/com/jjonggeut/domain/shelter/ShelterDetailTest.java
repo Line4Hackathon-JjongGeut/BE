@@ -121,10 +121,10 @@ class ShelterDetailTest {
 	}
 
 	@Test
-	void 미인증_시설은_연락처를_가린다() throws Exception {
+	void 미인증_시설도_연락처가_있으면_보여_준다() throws Exception {
 		detail(2, "").andExpect(status().isOk())
 				.andExpect(jsonPath("$.data.verificationStatus").value("UNVERIFIED"))
-				.andExpect(jsonPath("$.data.phone").isEmpty())
+				.andExpect(jsonPath("$.data.phone").value("02-333-4444"))
 				.andExpect(jsonPath("$.data.name").value("노원 온기쉼터"));
 	}
 

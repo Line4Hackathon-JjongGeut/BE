@@ -21,7 +21,6 @@ import com.jjonggeut.domain.recommendation.entity.PostingRef;
 import com.jjonggeut.domain.recommendation.entity.ShelterRef;
 import com.jjonggeut.domain.recommendation.repository.PostingRefRepository;
 import com.jjonggeut.domain.recommendation.repository.ShelterRefRepository;
-import com.jjonggeut.domain.shelter.entity.VerificationStatus;
 import com.jjonggeut.global.exception.BusinessException;
 import com.jjonggeut.global.exception.ErrorCode;
 import java.time.LocalDateTime;
@@ -98,14 +97,12 @@ public class ApplicationQueryService {
 		ApplicationDetailResponse.ScheduleInfo scheduleInfo = schedule != null
 				? new ApplicationDetailResponse.ScheduleInfo(schedule.getScheduleId(), startAt, endAt)
 				: startAt != null ? new ApplicationDetailResponse.ScheduleInfo(null, startAt, endAt) : null;
-		boolean verified = shelter.getVerificationStatus() == VerificationStatus.VERIFIED;
-
 		return new ApplicationDetailResponse(application.getApplicationId(), application.getStatus(),
 				application.getAppliedAt(), application.getMessage(), answers(application, posting),
 				new ApplicationDetailResponse.PostingInfo(posting.getPostingId(), posting.getTitle(),
 						posting.getPostingType(), posting.getStatus()),
 				new ApplicationDetailResponse.ShelterInfo(shelter.getShelterId(), shelter.getName(),
-						shelter.getAddress(), verified ? shelter.getPhone() : null),
+						shelter.getAddress(), shelter.getPhone()),
 				scheduleInfo, posting.getPreparations(),
 				ApplicationPolicy.cancellable(application, startAt, LocalDateTime.now()),
 				ApplicationPolicy.cancelDeadline(startAt), historyItems(applicationId), experienceInfo(applicationId));
