@@ -8,7 +8,7 @@ import jakarta.validation.constraints.Size;
 
 /**
  * 내 계정 수정 요청. 보낸 항목만 바뀌고 생략한 항목은 그대로다.
- * phone, email 은 빈 문자열("")을 보내면 값을 지운다. 이름과 닉네임은 지울 수 없다.
+ * phone, email, profileImageUrl 은 빈 문자열("")을 보내면 값을 지운다. 이름과 닉네임은 지울 수 없다.
  */
 public record UserUpdateRequest(
 
@@ -23,12 +23,15 @@ public record UserUpdateRequest(
 
 		@Email(message = "이메일 형식이 올바르지 않습니다.")
 		@Size(max = 255, message = "이메일은 255자 이하여야 합니다.")
-		String email
+		String email,
+
+		@Size(max = 500, message = "프로필 사진 URL은 500자 이하여야 합니다.")
+		String profileImageUrl
 ) {
 
 	@JsonIgnore
 	@AssertTrue(message = "수정할 항목을 하나 이상 보내야 합니다.")
 	public boolean isAnyFieldPresent() {
-		return name != null || nickname != null || phone != null || email != null;
+		return name != null || nickname != null || phone != null || email != null || profileImageUrl != null;
 	}
 }

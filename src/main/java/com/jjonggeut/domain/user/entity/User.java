@@ -44,6 +44,9 @@ public class User {
 	@Column(length = 20)
 	private String phone;
 
+	@Column(name = "profile_image_url", length = 500)
+	private String profileImageUrl;
+
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false, length = 20)
 	private Role role;
@@ -90,6 +93,10 @@ public class User {
 		this.phone = phone;
 	}
 
+	public void changeProfileImageUrl(String profileImageUrl) {
+		this.profileImageUrl = profileImageUrl;
+	}
+
 	public void changeEmail(String email) {
 		this.email = email;
 	}
@@ -105,6 +112,7 @@ public class User {
 		this.nickname = null;
 		this.email = null;
 		this.phone = null;
+		this.profileImageUrl = null;
 		this.status = UserStatus.WITHDRAWN;
 		this.deletedAt = now;
 	}

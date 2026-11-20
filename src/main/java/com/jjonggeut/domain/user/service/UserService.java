@@ -91,6 +91,9 @@ public class UserService {
 		if (request.email() != null) {
 			user.changeEmail(emptyToNull(request.email()));
 		}
+		if (request.profileImageUrl() != null) {
+			user.changeProfileImageUrl(emptyToNull(request.profileImageUrl()));
+		}
 
 		try {
 			// 동시 수정으로 사전 중복 검사를 통과해도 DB UNIQUE 제약에서 걸러진다.
