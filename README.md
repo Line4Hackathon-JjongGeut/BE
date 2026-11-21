@@ -23,10 +23,6 @@
 
 <br /><br />
 
-<a href="https://www.figma.com/design/MT6r1JI2b0bRTxrLACyOVk/쫑긋?node-id=299-534">🎨 Figma</a>
-&nbsp; | &nbsp;
-<a href="https://github.com/Line4Hackathon-JjongGeut">🐾 Team JjongGeut</a>
-
 </div>
 
 <br />
